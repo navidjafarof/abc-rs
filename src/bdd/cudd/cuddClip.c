@@ -250,6 +250,34 @@ cuddBddClippingAndAbstract(
 /*---------------------------------------------------------------------------*/
 /* Definition of static functions                                            */
 /*---------------------------------------------------------------------------*/
+#ifdef USE_CASH_DUMMY
+/**Function********************************************************************
+
+  Synopsis    We need to declare a function passed to cuddCacheLookup2 that can
+              be casted to DD_CTFP.
+
+******************************************************************************/
+static DdNode *
+Cudd_bddClippingAnd_dummy(DdManager *dd, DdNode *f, DdNode *g)
+{
+  assert(0);
+  return 0;
+}
+
+
+/**Function********************************************************************
+
+  Synopsis    We need to declare a function passed to cuddCacheLookup2 that can
+              be casted to DD_CTFP.
+
+******************************************************************************/
+static DdNode *
+cuddBddClippingAnd_dummy(DdManager *dd, DdNode *f, DdNode *g)
+{
+  assert(0);
+  return 0;
+}
+#endif
 
 
 /**Function********************************************************************
@@ -303,14 +331,18 @@ cuddBddClippingAndRecur(
 
     /* Check cache. Try to increase cache efficiency by sorting the
     ** pointers. */
-    if (f > g) {
+    if (cuddF2L(f) > cuddF2L(g)) {
         DdNode *tmp = f;
         f = g; g = tmp;
     }
     F = Cudd_Regular(f);
     G = Cudd_Regular(g);
+#ifdef USE_CASH_DUMMY
+    cacheOp = (DD_CTFP) (direction ? Cudd_bddClippingAnd_dummy : cuddBddClippingAnd_dummy);
+#else
     cacheOp = (DD_CTFP)
         (direction ? Cudd_bddClippingAnd : cuddBddClippingAnd);
+#endif
     if (F->ref != 1 || G->ref != 1) {
         r = cuddCacheLookup2(manager, cacheOp, f, g);
         if (r != NULL) return(r);
@@ -437,7 +469,7 @@ cuddBddClipAndAbsRecur(
     distance--;
 
     /* Check cache. */
-    if (f > g) { /* Try to increase cache efficiency. */
+    if (cuddF2L(f) > cuddF2L(g)) { /* Try to increase cache efficiency. */
         DdNode *tmp = f;
         f = g; g = tmp;
     }

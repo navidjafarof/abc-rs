@@ -24,6 +24,7 @@
 #include "bool/dec/dec.h"
 #include "opt/fxu/fxu.h"
 #include "aig/miniaig/ndr.h"
+#include "misc/util/utilTruth.h"
 
 #ifdef ABC_USE_CUDD
 #include "bdd/extrab/extraBdd.h"
@@ -1924,25 +1925,16 @@ void Abc_NtkDetectMatching( Abc_Ntk_t * pNtk )
 }
 
 
-/**Function*************************************************************
-
-  Synopsis    [Compares the pointers.]
-
-  Description []
-               
-  SideEffects []
-
-  SeeAlso     []
-
-***********************************************************************/
-int Abc_ObjPointerCompare( void ** pp1, void ** pp2 )
-{
-    if ( *pp1 < *pp2 )
-        return -1;
-    if ( *pp1 > *pp2 ) 
-        return 1;
-    return 0; 
-}
+/// The legacy `Abc_ObjPointerCompare()` comparator is unused; keep the code here
+/// commented to document its previous behavior without exposing a prototype.
+// int Abc_ObjPointerCompare( void ** pp1, void ** pp2 )
+// {
+//     if ( *pp1 < *pp2 )
+//         return -1;
+//     if ( *pp1 > *pp2 ) 
+//         return 1;
+//     return 0; 
+// }
 
 /**Function*************************************************************
 
@@ -3267,10 +3259,299 @@ Gia_Man_t * Abc_SopSynthesizeOne( char * pSop, int fClp )
     return Abc_NtkStrashToGia( pNtkNew );
 }
 
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+static int s_ArraySize = 145;
+static int s_ArrayData[290] = {
+    0, 0,
+    0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,  0, 0,
+    10, 6,  14, 12,  10, 2,  22, 20,  2, 24,  16, 4,  28, 18,  16, 10,  8, 4,  34, 32,  30, 36,  38, 26,  16, 6,  36, 20,  44, 42,  46, 40,  42, 44,  14, 6,  52, 34,  32, 54,  56, 50,  58, 48,  32, 24,  20, 2,  12, 6,  66, 34,  68, 64,  62, 70,  28, 68,  74, 72,  76, 58,  70, 62,  80, 78,  68, 28,  84, 74,  4, 2,  88, 20,  64, 90,  92, 86,  66, 32,  18, 96,  98, 56,  100, 94,  52, 36,  104, 38,  90, 42,  36, 2,  108, 110,  112, 106,  114, 100,  102, 116,  118, 82,  116, 60,  120, 122,  124, 60,  118, 60,  102, 82,  128, 130,  132, 82,  134, 126,  82, 116,  122, 138,  122, 118,  142, 140,  60, 102,  130, 146,  130, 118,  150, 148,  152, 144,  154, 136,  18, 156,  144, 126,  68, 160,  32, 136,  164, 162,  166, 158,  28, 160,  70, 126,  90, 144,  174, 172,  176, 170,  152, 134,  36, 180,  2, 134,  184, 182,  186, 178,  188, 168,  64, 144,  164, 158,  194, 192,  96, 156,  44, 154,  200, 170,  202, 198,  204, 176,  206, 196,  204, 168,  62, 126,  212, 186,  24, 134,  108, 152,  218, 192,  220, 216,  222, 214,  224, 210,  220, 194,  110, 152,  30, 180,  232, 230,  184, 172,  236, 234,  238, 228,  234, 182,  242, 220,  244, 168,  42, 154,  248, 202,  54, 136,  252, 164,  254, 214,  256, 250,  218, 194,  252, 198,  262, 242,  264, 260,  232, 220,  268, 262,  270, 168,
+    191, 191,  209, 209,  226, 226,  240, 240,  246, 246,  259, 259,  267, 267,  272, 272,
+};
+int Abc_NtkHasConstNode()
+{
+    int i;
+    for ( i = 1; i < s_ArraySize; i++ )
+        if ( s_ArrayData[2*i] || s_ArrayData[2*i+1] )
+            break;
+    for ( ; i < s_ArraySize; i++ )
+        if ( s_ArrayData[2*i] < 2 && s_ArrayData[2*i+1] < 2 )
+            return 1;
+    return 0;
+}
+Abc_Ntk_t * Abc_NtkFromArray()
+{
+    Vec_Ptr_t * vNodes  = Vec_PtrAlloc( s_ArraySize ); int i, nPos = 0; 
+    Abc_Ntk_t * pNtkNew = Abc_NtkAlloc( ABC_NTK_LOGIC, ABC_FUNC_SOP, 1 );
+    Abc_Obj_t * pObjNew = Abc_NtkHasConstNode() ? Abc_NtkCreateNode(pNtkNew) : NULL; 
+    if ( pObjNew ) pObjNew->pData = Abc_SopCreateConst0((Mem_Flex_t *)pNtkNew->pManFunc);
+    Vec_PtrPush( vNodes, pObjNew );
+    for ( i = 1; i < s_ArraySize; i++ )
+        if ( !s_ArrayData[2*i] && !s_ArrayData[2*i+1] )
+            Vec_PtrPush( vNodes, Abc_NtkCreatePi(pNtkNew) );
+        else
+            break;
+    for ( ; i < s_ArraySize; i++ )
+    {
+        char * pSop = NULL;
+        if ( s_ArrayData[2*i] > s_ArrayData[2*i+1] )
+            pSop = Abc_SopCreateXor( (Mem_Flex_t *)pNtkNew->pManFunc, 2 );
+        else if ( s_ArrayData[2*i] < s_ArrayData[2*i+1] )
+            pSop = Abc_SopCreateAnd( (Mem_Flex_t *)pNtkNew->pManFunc, 2, NULL );
+        else
+            break;
+        pObjNew = Abc_NtkCreateNode( pNtkNew );
+        Abc_ObjAddFanin( pObjNew, (Abc_Obj_t *)Vec_PtrEntry(vNodes, Abc_Lit2Var(s_ArrayData[2*i]))   );
+        Abc_ObjAddFanin( pObjNew, (Abc_Obj_t *)Vec_PtrEntry(vNodes, Abc_Lit2Var(s_ArrayData[2*i+1])) );
+        if ( Abc_LitIsCompl(s_ArrayData[2*i])   )  Abc_SopComplementVar( pSop, 0 );
+        if ( Abc_LitIsCompl(s_ArrayData[2*i+1]) )  Abc_SopComplementVar( pSop, 1 );
+        pObjNew->pData = pSop;
+        Vec_PtrPush( vNodes, pObjNew );
+    }
+    for ( ; i < s_ArraySize; i++ )
+    {
+        char * pSop = NULL;
+        assert( s_ArrayData[2*i] == s_ArrayData[2*i+1] );
+        pObjNew = Abc_NtkCreateNode( pNtkNew );
+        Abc_ObjAddFanin( pObjNew, (Abc_Obj_t *)Vec_PtrEntry(vNodes, Abc_Lit2Var(s_ArrayData[2*i]))   );
+        if ( Abc_LitIsCompl(s_ArrayData[2*i]) )
+            pSop = Abc_SopCreateInv( (Mem_Flex_t *)pNtkNew->pManFunc );
+        else
+            pSop = Abc_SopCreateBuf( (Mem_Flex_t *)pNtkNew->pManFunc );
+        pObjNew->pData = pSop;
+        Vec_PtrPush( vNodes, pObjNew );
+        nPos++;
+    }
+    for ( i = 0; i < nPos; i++ )
+        Abc_ObjAddFanin( Abc_NtkCreatePo(pNtkNew), (Abc_Obj_t *)Vec_PtrEntry(vNodes, s_ArraySize-nPos+i) );
+    Vec_PtrFree( vNodes );
+    pNtkNew->pName = Extra_UtilStrsav("test");
+    Abc_NtkAddDummyPiNames( pNtkNew );
+    Abc_NtkAddDummyPoNames( pNtkNew );
+    Abc_NtkAddDummyBoxNames( pNtkNew );
+    if ( !Abc_NtkCheck( pNtkNew ) )
+        Abc_Print( 1, "Abc_NtkFromArray(): Network check has failed.\n" );
+    return pNtkNew;
+}
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+void Abc_PrintAT( Vec_Int_t * vRanks )
+{
+    int i, Entry;
+    Vec_IntForEachEntryReverse( vRanks, Entry, i )
+        if ( Entry == 0 )
+            printf( "    " );
+        else
+            printf( "%4d", Entry );
+    //printf( "\n" );
+}
+int Abc_NtkMatchGpcPattern( Vec_Int_t * vRanks, int i, char * pGPC )
+{
+    int k, Cur, Min = ABC_INFINITY;
+    for ( k = 0; pGPC[k] != ':' && i+k < Vec_IntSize(vRanks); k++ ) {
+        if ( Abc_TtReadHexDigit(pGPC[k]) == 0 ) 
+            continue;
+        Cur = Vec_IntEntry(vRanks, i+k) / Abc_TtReadHexDigit(pGPC[k]);
+        if ( Min > Cur )
+            Min = Cur;
+    }
+    return Min;
+}
+void Abc_NtkUpdateGpcPattern( Vec_Int_t * vRank, int i, char * pGPC, int nGpcs, Vec_Int_t * vRank2, Vec_Int_t * vLevel )
+{
+    int k; char * pOut = strstr(pGPC, ":");
+    assert( pOut && pOut[0] == ':' );
+    pOut++;
+    Vec_IntAddToEntry( vLevel, i,  nGpcs );
+    for ( k = 0; pGPC[k] != ':'; k++ )
+        Vec_IntAddToEntry( vRank,  i+k, -nGpcs * Abc_TtReadHexDigit(pGPC[k]) );
+    for ( k = 0; pOut[k] != ':'; k++ )
+        Vec_IntAddToEntry( vRank2, i+k,  nGpcs * Abc_TtReadHexDigit(pOut[k]) );
+}
+int Abc_NtkGetGpcLutCount( char * pGPC )
+{
+    char * pOut = strstr(pGPC, ":");
+    char * pLut = strstr(pOut+1, ":");
+    return atoi(pLut+1);
+}
+static inline int Vec_WecSum( Vec_Wec_t * p )
+{
+    Vec_Int_t * vVec;
+    int i, Counter = 0;
+    Vec_WecForEachLevel( p, vVec, i )
+        Counter += Vec_IntSum(vVec);
+    return Counter;
+}
+char ** Abc_NtkTransformGPCs( char ** pGPCs, int nGPCs )
+{
+    char * pOut, * pLut, ** pRes = ABC_ALLOC( char *, nGPCs );
+    int i, k, nLength;
+    for ( i = 0; i < nGPCs; i++ ) {
+        pRes[i] = Abc_UtilStrsav(pGPCs[i]);
+        pOut = strstr(pRes[i], ":");
+        nLength = (int)(pOut-pRes[i]);
+        for ( k = 0; k < nLength/2; k++ )
+            ABC_SWAP( char, pRes[i][k], pRes[i][nLength-1-k] )
+        pLut = strstr(pOut+1, ":");
+        nLength = (int)(pLut-pOut-1);
+        for ( k = 0; k < nLength/2; k++ )
+            ABC_SWAP( char, pOut[1+k], pOut[1+nLength-1-k] )
+    }    
+    return pRes;
+}
+int Abc_NtkCheckGpc( char * pGPC, char * pGPC0 )
+{
+    int RetValue = 0, k, Sum[2] = {0}; 
+    char * pOut = strstr(pGPC, ":");
+    for ( k = 0; pGPC[k] != ':'; k++ )
+        Sum[0] += (1 << k) * Abc_TtReadHexDigit(pGPC[k]);
+    for ( k = 0; pOut[1+k] != ':'; k++ )
+        Sum[1] += (1 << k) * Abc_TtReadHexDigit(pOut[1+k]);
+    //printf( "GPC %s has input sum %d and output sum %d\n", pGPC0, Sum[0], Sum[1] );
+    if ( Sum[0]+1 > (1 << Abc_Base2Log(Sum[1]+1)) )
+        printf( "The largest value of GPC inputs (%d) exceeds the capacity of outputs (%d) for GPC %s.\n", Sum[0], Sum[1], pGPC0 );
+    else if ( Sum[1]+1 > (1 << Abc_Base2Log(Sum[0]+1)) )
+        printf( "The largest value of GPC outputs (%d) exceeds the capacity of inputs (%d) for GPC %s.\n", Sum[1], Sum[0], pGPC0 );
+    else 
+        RetValue = 1;
+    return RetValue;
+}
+void Abc_NtkATMap( int nXVars, int nYVars, int nAdder, char ** pGPCs0, int nGPCs, int fReturn, int fVerbose )
+{
+    abctime clkStart = Abc_Clock();   
+    char ** pGPCs = Abc_NtkTransformGPCs(pGPCs0, nGPCs);
+    int i, nGPCluts[100] = {0};
+    for ( i = 0; i < nGPCs; i++ )
+        if ( !Abc_NtkCheckGpc(pGPCs[i], pGPCs0[i]) )
+            return;
+    for ( i = 0; i < nGPCs; i++ )
+        nGPCluts[i] = Abc_NtkGetGpcLutCount(pGPCs[i]);
+    int x, n, Entry, iLevel = 0, Sum = 0, nGpcs = 0, nBits, fFinished, nRcaLuts = 0, nLuts = 0;
+    for ( x = 0; x < nXVars; x++ )
+        Sum += (1 << x) * nYVars;
+    nBits = Abc_Base2Log( Sum+1 );
+    printf( "Rectangular adder tree (X=%d Y=%d Sum=%d Out=%d) mapped with", nXVars, nYVars, Sum, nBits );
+    for ( i = 0; i < nGPCs; i++ )
+        printf( " GPC%d=%s", i, pGPCs0[i] );
+    printf( "\n" );
+    Vec_Int_t * vLevel;
+    Vec_Int_t * vRank[3] = { Vec_IntAlloc(100), Vec_IntAlloc(100), Vec_IntAlloc(100) };
+    Vec_Wec_t ** vGPCs = ABC_ALLOC( Vec_Wec_t *, nGPCs );
+    for ( i = 0; i < nGPCs; i++ )
+        vGPCs[i] = Vec_WecAlloc(100);
+    Vec_IntFill( vRank[0], nBits, 0 );
+    for ( x = 0; x < nXVars; x++ )
+        Vec_IntAddToEntry( vRank[0], x, nYVars );
+    if ( fVerbose ) {
+        printf( "Ranks: " );
+        for ( i = nBits-1; i >= 0; i-- )
+            printf( "%4d", i );
+        printf( "       : " );
+        for ( i = nBits-1; i >= 0; i-- )
+            printf( "%4d", i );
+        printf( "  LUT6\n" );
+    }
+    for ( n = 0; n < nGPCs; n++ ) 
+    for ( i = 0, fFinished = 0; !fFinished; i++ ) 
+    {
+        int fAdded = 0;
+        vLevel = Vec_WecPushLevel( vGPCs[n] );
+        Vec_IntFill( vLevel, nBits, 0 );
+        Vec_IntFill( vRank[1], nBits, 0 );
+        Vec_IntClear( vRank[2] );
+        Vec_IntAppend( vRank[2], vRank[0] );
+        fFinished = 1; 
+        if ( Vec_IntFindMax(vRank[0]) > nAdder ) {
+            for ( x = 0; x < nBits; x++ )
+                if ( (nGpcs = Abc_NtkMatchGpcPattern(vRank[0], x, pGPCs[n])) )
+                    Abc_NtkUpdateGpcPattern(vRank[0], x, pGPCs[n], nGpcs, vRank[1], vLevel), fFinished = 0, fAdded = 1;
+            nLuts += Vec_IntSum(vLevel) * nGPCluts[n];
+            Vec_IntForEachEntry( vRank[1], Entry, x )
+                Vec_IntAddToEntry( vRank[0], x, Entry );
+        }
+        if ( fVerbose && (fAdded || Vec_IntFindMax(vRank[2]) <= nAdder ) ) {
+            printf( "Lev%02d: ", iLevel++ );
+            Abc_PrintAT( vRank[2] ); 
+            if ( fAdded ) {
+                printf( "   GPC%d: ", n );
+                Abc_PrintAT( vLevel ); 
+                printf( "  %4d", Vec_IntSum(vLevel) * nGPCluts[n] );
+            }
+            else if ( Vec_IntFindMax(vRank[2]) <= nAdder ) {
+                printf( "   ADD%d: ", nAdder );
+                for ( x = 0; x < nBits; x++ )
+                    if ( Vec_IntEntry(vRank[2], x) > 1 )
+                        break;
+                for ( i = nBits-1; i >= x; i-- )
+                    printf( "%4d", 1 );
+                for ( ; i >= 0; i-- )
+                    printf( "    " );
+                printf( "  %4d", (nBits-x)*(nAdder == 4 ? 2 : 1) );    
+            }
+            printf( "\n" );
+        }
+        if ( fAdded ) {
+            if ( fReturn ) {
+                fFinished = 1; 
+                n = -1;
+            }
+        }
+        else if ( Vec_IntFindMax(vRank[2]) <= nAdder ) {
+            fFinished = 1; 
+            n = nGPCs;
+        }
+    }
+    if ( Vec_IntFindMax(vRank[0]) > nAdder )
+        printf( "Synthesis of the adder tree is incomplete. Try using the full adder \"3:11:1\" as the last GPC.\n" );
+    else if ( fVerbose && Vec_IntFindMax(vRank[0]) <= nAdder ) {
+        printf( "Lev%02d: ", iLevel++ );
+        for ( i = nBits-1; i >= 0; i-- )
+            printf( "%4d", 1 );
+        printf( "\n" );
+    }
+    printf( "Statistics:  " ); 
+    for ( n = 0; n < nGPCs; n++ )
+        printf( "GPC%d = %d.  ", n, Vec_WecSum(vGPCs[n]) );
+    for ( x = 0; x < nBits; x++ )
+        if ( Vec_IntEntry(vRank[0], x) > 1 )
+            break;
+    nRcaLuts = (nBits-x)*(nAdder == 4 ? 2 : 1);
+    printf( "ADD%d = %d.  ", nAdder, nRcaLuts );    
+    printf( "Total LUT count = %d.  ", nLuts+nRcaLuts );
+    for ( i = 0; i < 3; i++ )
+        Vec_IntFree( vRank[i] );
+    for ( i = 0; i < nGPCs; i++ )
+        Vec_WecFree( vGPCs[i] );
+    ABC_FREE( vGPCs );
+    for ( i = 0; i < nGPCs; i++ )
+        ABC_FREE( pGPCs[i] );
+    ABC_FREE( pGPCs );
+    Abc_PrintTime( 0, "Total time", Abc_Clock() - clkStart );    
+}
+
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
 
 
 ABC_NAMESPACE_IMPL_END
-

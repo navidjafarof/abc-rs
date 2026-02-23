@@ -62,6 +62,8 @@ void If_ManSetDefaultPars( If_Par_t * pPars )
     pPars->fPower      =  0;
     pPars->fCutMin     =  0;
     pPars->fBidec      =  0;
+    pPars->fUserLutDec =  0;
+    pPars->fUserLut2D  =  0;
     pPars->fVerbose    =  0;
 }
 
@@ -107,6 +109,9 @@ int If_ManPerformMappingComb( If_Man_t * p )
     abctime clkTotal = Abc_Clock();
     int i;
 
+    //p->vVisited2 = Vec_IntAlloc( 100 );
+    //p->vMarks = Vec_StrStart( If_ManObjNum(p) );
+
     // set arrival times and fanout estimates
     If_ManForEachCi( p, pObj, i )
     {
@@ -119,6 +124,7 @@ int If_ManPerformMappingComb( If_Man_t * p )
     {
         // map for delay
         If_ManPerformMappingRound( p, p->pPars->nCutsMax, 0, 1, 1, "Delay" );
+
         // map for delay second option
         p->pPars->fFancy = 1;
         If_ManResetOriginalRefs( p );
@@ -148,6 +154,10 @@ int If_ManPerformMappingComb( If_Man_t * p )
     // area oriented mapping
     for ( i = 0; i < p->pPars->nAreaIters; i++ )
     {
+        if ( p->pPars->fDumpFile && p->pPars->nLutSize <= 6 && i == p->pPars->nAreaIters-1 ) {
+            p->vCuts = Vec_IntAlloc( 1 << 20 );
+            p->vCutCosts = Vec_IntAlloc( 1 << 16 );
+        }
         If_ManPerformMappingRound( p, p->pPars->nCutsMax, 2, 0, 0, "Area" );
         if ( p->pPars->fExpRed )
             If_ManImproveMapping( p );

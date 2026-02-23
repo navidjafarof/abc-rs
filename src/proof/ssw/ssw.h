@@ -42,6 +42,7 @@ struct Ssw_Pars_t_
 {
     int              nPartSize;     // size of the partition
     int              nOverSize;     // size of the overlap between partitions
+    int              nProcs;        // the number of processors
     int              nFramesK;      // the induction depth
     int              nFramesAddSim; // the number of additional frames to simulate
     int              fConstrs;      // treat the last nConstrs POs as seq constraints
@@ -55,6 +56,7 @@ struct Ssw_Pars_t_
     int              nResimDelta;   // the number of nodes to resimulate
     int              nStepsMax;     // (scorr only) the max number of induction steps
     int              TimeLimit;     // time out in seconds
+    int              nLimitMax;     // the limit on the number of iterations
     int              fPolarFlip;    // uses polarity adjustment
     int              fLatchCorr;    // perform register correspondence
     int              fConstCorr;    // perform constant correspondence
@@ -72,6 +74,8 @@ struct Ssw_Pars_t_
     int              fEquivDump;    // enables dumping equivalences
     int              fEquivDump2;   // enables dumping equivalences
     int              fStopWhenGone; // stop when PO output is not a candidate constant
+    int              nSkip;
+    int              nSkipLimit;
     // optimized latch correspondence
     int              fLatchCorrOpt; // perform register correspondence (optimized)
     int              nSatVarMax;    // max number of SAT vars before recycling SAT solver (optimized latch corr only)
@@ -111,6 +115,8 @@ struct Ssw_RarPars_t_
     int              nSolved;
     Abc_Cex_t *      pCex;
     int(*pFuncOnFail)(int,Abc_Cex_t*); // called for a failed output in MO mode
+    int(*pFuncProgress)(void *, int, unsigned); // progress/termination callback
+    void *           pProgress;        // progress callback data
 };
 
 typedef struct Ssw_Sml_t_ Ssw_Sml_t; // sequential simulation manager

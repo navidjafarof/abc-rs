@@ -41,7 +41,7 @@ RSC=rc.exe
 # PROP Intermediate_Dir "ReleaseLib"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_MBCS" /D "_LIB" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /O2 /I "src" /D "WIN32" /D "WINDOWS" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D ABC_DLL=ABC_DLLEXPORT /D "_CRT_SECURE_NO_DEPRECATE" /D "ABC_USE_PTHREADS" /D "ABC_USE_CUDD" /FR /YX /FD /c
+# ADD CPP /nologo /MD /W3 /GX /O2 /I "src" /D "WIN32" /D "WINDOWS" /D "NDEBUG" /D "_CONSOLE" /D "_MBCS" /D ABC_DLL=ABC_DLLEXPORT /D "_CRT_SECURE_NO_DEPRECATE" /D "ABC_USE_PTHREADS" /D "ABC_USE_CUDD" /D "HAVE_STRUCT_TIMESPEC" /D "_WINSOCKAPI_" /FR /YX /FD /c
 # ADD BASE RSC /l 0x409 /d "NDEBUG"
 # ADD RSC /l 0x409 /d "NDEBUG"
 BSC32=bscmake.exe
@@ -64,7 +64,7 @@ LIB32=link.exe -lib
 # PROP Intermediate_Dir "DebugLib"
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_MBCS" /D "_LIB" /YX /FD /GZ /c
-# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "src" /D "WIN32" /D "WINDOWS" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D ABC_DLL=ABC_DLLEXPORT /D "_CRT_SECURE_NO_DEPRECATE" /D "ABC_USE_PTHREADS" /D "ABC_USE_CUDD" /FR /YX /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "src" /D "WIN32" /D "WINDOWS" /D "_DEBUG" /D "_CONSOLE" /D "_MBCS" /D ABC_DLL=ABC_DLLEXPORT /D "_CRT_SECURE_NO_DEPRECATE" /D "ABC_USE_PTHREADS" /D "ABC_USE_CUDD" /D "HAVE_STRUCT_TIMESPEC" /D "_WINSOCKAPI_" /FR /YX /FD /GZ /c
 # ADD BASE RSC /l 0x409 /d "_DEBUG"
 # ADD RSC /l 0x409 /d "_DEBUG"
 BSC32=bscmake.exe
@@ -387,6 +387,10 @@ SOURCE=.\src\base\abci\abcOrder.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base\abci\abcOrchestration.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\base\abci\abcPart.c
 # End Source File
 # Begin Source File
@@ -508,6 +512,10 @@ SOURCE=.\src\base\abci\abcVerify.c
 # Begin Source File
 
 SOURCE=.\src\base\abci\abcXsim.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\base\abci\abcTopo.c
 # End Source File
 # End Group
 # Begin Group "cmd"
@@ -675,11 +683,19 @@ SOURCE=.\src\base\io\ioWriteDot.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base\io\ioWriteEdgelist.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\base\io\ioWriteEqn.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\base\io\ioWriteGml.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\base\io\ioWriteHMetis.c
 # End Source File
 # Begin Source File
 
@@ -696,6 +712,10 @@ SOURCE=.\src\base\io\ioWriteSmv.c
 # Begin Source File
 
 SOURCE=.\src\base\io\ioWriteVerilog.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\base\io\ioJsonc.c
 # End Source File
 # End Group
 # Begin Group "main"
@@ -1127,6 +1147,18 @@ SOURCE=.\src\base\wln\wln.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base\wln\wlnBlast.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\base\wln\wlnCom.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\base\wln\wlnGuide.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\base\wln\wlnMem.c
 # End Source File
 # Begin Source File
@@ -1143,7 +1175,15 @@ SOURCE=.\src\base\wln\wlnObj.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\base\wln\wlnRead.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\base\wln\wlnRetime.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\base\wln\wlnRtl.c
 # End Source File
 # Begin Source File
 
@@ -1164,6 +1204,10 @@ SOURCE=.\src\base\wln\wlnWriteVer.c
 # Begin Source File
 
 SOURCE=.\src\bdd\extrab\extraBdd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\bdd\extrab\extraLutCas.h
 # End Source File
 # Begin Source File
 
@@ -2117,6 +2161,18 @@ SOURCE=.\src\sat\bmc\bmcMulti.c
 
 SOURCE=.\src\sat\bmc\bmcUnroll.c
 # End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\bmc\bmcMaj7.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\bmc\bmcMaj8.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\bmc\bmcMaj9.c
+# End Source File
 # End Group
 # Begin Group "bsat2"
 
@@ -2482,6 +2538,754 @@ SOURCE=.\src\sat\glucose2\Vec.h
 SOURCE=.\src\sat\glucose2\XAlloc.h
 # End Source File
 # End Group
+# Begin Group "kissat"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\allocate.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\analyze.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\ands.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\arena.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\assign.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\averages.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\backbone.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\backtrack.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\build.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\bump.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\check.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\classify.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\clause.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\collect.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\colors.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\compact.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\config.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\congruence.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\decide.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\deduce.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\definition.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\dense.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\dump.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\eliminate.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\equivalences.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\error.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\extend.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\factor.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\fastel.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\file.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\flags.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\format.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\forward.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\gates.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\heap.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\ifthenelse.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\import.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\internal.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\kimits.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\kissatSolver.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\kissatTest.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\kitten.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\kptions.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\krite.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\kucky.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\learn.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\logging.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\minimize.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\mode.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\phases.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\preprocess.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\print.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\probe.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\profile.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\promote.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\proof.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\propbeyond.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\propdense.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\propinitially.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\proprobe.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\propsearch.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\queue.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\reduce.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\reluctant.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\reorder.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\rephase.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\report.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\resize.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\resolve.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\resources.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\restart.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\search.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\shrink.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\smooth.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\sort.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\stack.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\statistics.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\strengthen.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\substitute.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\sweep.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\terminate.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\tiers.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\trail.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\transitive.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\utilities.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\vector.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\vivify.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\walk.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\warmup.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\watch.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\kissat\weaken.c
+# End Source File
+# End Group
+# Begin Group "cadical"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_kitten.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_analyze.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_arena.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_assume.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_averages.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_backbone.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_backtrack.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_backward.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_bins.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_block.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_ccadical.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_checker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_clause.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_collect.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_compact.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_condition.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_config.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_congruence.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_constrain.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_contract.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_cover.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_decide.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_decompose.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_deduplicate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_definition.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_drattracer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_elim.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_elimfast.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_ema.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_extend.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_external.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_external_propagate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_factor.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_file.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_flags.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_flip.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_format.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_frattracer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_gates.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_idruptracer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_instantiate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_internal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_ipasir.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_lidruptracer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_limit.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_logging.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_lookahead.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_lratchecker.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_lrattracer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_lucky.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_message.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_minimize.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_occs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_options.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_parse.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_phases.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_probe.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_profile.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_proof.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_propagate.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_queue.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_random.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_reap.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_reduce.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_rephase.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_report.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_resources.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_restart.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_restore.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_score.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_shrink.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_signal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_solution.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_solver.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_stable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_stats.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_subsume.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_sweep.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_terminal.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_ternary.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_tier.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_transred.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_unstable.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_util.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_var.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_veripbtracer.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_version.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_vivify.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_walk.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_walk_full_occs.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_warmup.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadical_watch.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadicalSolver.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\sat\cadical\cadicalTest.c
+# End Source File
+# End Group
 # End Group
 # Begin Group "opt"
 
@@ -2544,6 +3348,97 @@ SOURCE=.\src\opt\fxu\fxuSingle.c
 # Begin Source File
 
 SOURCE=.\src\opt\fxu\fxuUpdate.c
+# End Source File
+# Begin Group "untk"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\opt\untk\NtkCmd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\untk\Netlist.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\untk\NtkNtk.cpp
+# End Source File
+# End Group
+# Begin Group "ufar"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\opt\ufar\UfarCmd.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\ufar\UfarMgr.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\ufar\UfarPth.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\ufar\UfarPth.h
+# End Source File
+# End Group
+# Begin Group "util"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\opt\util\util.cpp
+# End Source File
+# End Group
+# Begin Group "rar"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireMap.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireMiaig.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireRar.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireRng.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireTime.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireTt.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireVec.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireMap.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireMiaig.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireRar.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\rar\rewireRng.c
 # End Source File
 # End Group
 # Begin Group "rwr"
@@ -3294,6 +4189,46 @@ SOURCE=.\src\opt\sbd\sbdSat.c
 SOURCE=.\src\opt\sbd\sbdWin.c
 # End Source File
 # End Group
+# Begin Group "eslim"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\eSLIM.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\eSLIM.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\eSLIMMan.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\relationGeneration.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\relationGeneration.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\satInterfaces.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\selectionStrategy.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\utils.hpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\opt\eslim\synthesisEngine.hpp
+# End Source File
+# End Group
 # End Group
 # Begin Group "map"
 
@@ -3499,6 +4434,10 @@ SOURCE=.\src\map\if\ifDec16.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\map\if\ifDec66.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\map\if\ifDec75.c
 # End Source File
 # Begin Source File
@@ -3563,7 +4502,15 @@ SOURCE=.\src\map\if\ifTune.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\map\if\acd\ac_wrapper.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\map\if\ifUtil.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\map\if\ifDecJ.c
 # End Source File
 # End Group
 # Begin Group "amap"
@@ -4071,6 +5018,10 @@ SOURCE=.\src\misc\util\utilBridge.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\misc\util\utilBSet.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\misc\util\utilCex.c
 # End Source File
 # Begin Source File
@@ -4115,6 +5066,14 @@ SOURCE=.\src\misc\util\utilNam.h
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\misc\util\utilPth.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilPrefix.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\misc\util\utilSignal.c
 # End Source File
 # Begin Source File
@@ -4128,6 +5087,30 @@ SOURCE=.\src\misc\util\utilSort.c
 # Begin Source File
 
 SOURCE=.\src\misc\util\utilTruth.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilBipart.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilLinear.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilMiniver.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilMulSim.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilAigSim.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\util\utilNet.c
 # End Source File
 # End Group
 # Begin Group "nm"
@@ -4408,6 +5391,30 @@ SOURCE=.\src\misc\parse\parseInt.h
 # Begin Source File
 
 SOURCE=.\src\misc\parse\parseStack.c
+# End Source File
+# End Group
+# Begin Group "btor"
+
+# PROP Default_Filter ""
+# Begin Source File
+
+SOURCE=.\src\misc\btor\btor2mem.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\btor\btor2parser.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\btor\btor2parser.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\btor\btor2stack.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\misc\btor\catbtor.c
 # End Source File
 # End Group
 # End Group
@@ -4875,6 +5882,14 @@ SOURCE=.\src\aig\gia\giaBidec.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\aig\gia\giaBound.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaBsFind.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\aig\gia\giaCCof.c
 # End Source File
 # Begin Source File
@@ -4908,6 +5923,14 @@ SOURCE=.\src\aig\gia\giaCSat3.c
 # Begin Source File
 
 SOURCE=.\src\aig\gia\giaCSatOld.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaCSatP.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaCSatP.h
 # End Source File
 # Begin Source File
 
@@ -5075,7 +6098,19 @@ SOURCE=.\src\aig\gia\giaMinLut2.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\aig\gia\giaMulFind.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\aig\gia\giaMuxes.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaNewBdd.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaNewTt.h
 # End Source File
 # Begin Source File
 
@@ -5127,11 +6162,19 @@ SOURCE=.\src\aig\gia\giaResub3.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\aig\gia\giaResub6.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\aig\gia\giaRetime.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\aig\gia\giaRex.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaRrr.cpp
 # End Source File
 # Begin Source File
 
@@ -5159,6 +6202,10 @@ SOURCE=.\src\aig\gia\giaSatoko.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\aig\gia\giaSatSyn.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\aig\gia\giaScl.c
 # End Source File
 # Begin Source File
@@ -5180,6 +6227,10 @@ SOURCE=.\src\aig\gia\giaShrink6.c
 # Begin Source File
 
 SOURCE=.\src\aig\gia\giaShrink7.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaSif.c
 # End Source File
 # Begin Source File
 
@@ -5259,11 +6310,43 @@ SOURCE=.\src\aig\gia\giaTsim.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\aig\gia\giaTtopt.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaTransduction.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaTransduction.h
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaTranStoch.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\aig\gia\giaUnate.c
 # End Source File
 # Begin Source File
 
 SOURCE=.\src\aig\gia\giaUtil.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaDecGraph.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaAgi.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaLutCas.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\aig\gia\giaMulFind3.c
 # End Source File
 # End Group
 # Begin Group "miniaig"
@@ -5284,14 +6367,6 @@ SOURCE=.\src\aig\miniaig\minilut.h
 # Begin Source File
 
 SOURCE=.\src\aig\miniaig\ndr.h
-# End Source File
-# End Group
-# Begin Group "uap"
-
-# PROP Default_Filter ""
-# Begin Source File
-
-SOURCE=.\src\aig\uap\uap.h
 # End Source File
 # End Group
 # End Group
@@ -5506,7 +6581,6 @@ SOURCE=.\src\bool\rpo\rpo.c
 SOURCE=.\src\bool\rpo\rpo.h
 # End Source File
 # End Group
-# End Group
 # Begin Group "prove"
 
 # PROP Default_Filter ""
@@ -5555,6 +6629,10 @@ SOURCE=.\src\proof\cec\cecPat.c
 # End Source File
 # Begin Source File
 
+SOURCE=.\src\proof\cec\cecProve.c
+# End Source File
+# Begin Source File
+
 SOURCE=.\src\proof\cec\cecSat.c
 # End Source File
 # Begin Source File
@@ -5564,6 +6642,10 @@ SOURCE=.\src\proof\cec\cecSatG.c
 # Begin Source File
 
 SOURCE=.\src\proof\cec\cecSatG2.c
+# End Source File
+# Begin Source File
+
+SOURCE=.\src\proof\cec\cecSatG3.c
 # End Source File
 # Begin Source File
 
@@ -5593,6 +6675,7 @@ SOURCE=.\src\proof\cec\cecSweep.c
 
 SOURCE=.\src\proof\cec\cecSynth.c
 # End Source File
+# End Group
 # End Group
 # Begin Group "dch"
 
@@ -6237,12 +7320,14 @@ SOURCE=.\src\proof\acec\acecUtil.c
 
 SOURCE=.\src\proof\acec\acecXor.c
 # End Source File
-# End Group
+
 # End Group
 # End Group
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
+# End Group
+# End Group
 # End Group
 # End Target
 # End Project

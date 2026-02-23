@@ -153,13 +153,15 @@ int Sfm_NtkWindowToSolver( Sfm_Ntk_t * p )
 ***********************************************************************/
 word Sfm_ComputeInterpolant( Sfm_Ntk_t * p )
 {
-    word * pSign, uCube, uTruth = 0;
+    word * pSign;
     int status, i, Div, iVar, nFinal, * pFinal, nIter = 0;
     int pLits[2], nVars = sat_solver_nvars( p->pSat );
+    int nWords = Abc_Truth6WordNum( Vec_IntSize(p->vDivIds) );
     sat_solver_setnvars( p->pSat, nVars + 1 );
     pLits[0] = Abc_Var2Lit( Sfm_ObjSatVar(p, p->iPivotNode), 0 ); // F = 1
     pLits[1] = Abc_Var2Lit( nVars, 0 ); // iNewLit
-    assert( Vec_IntSize(p->vDivIds) <= 6 );
+    assert( Vec_IntSize(p->vDivIds) <= SFM_FANIN_MAX );
+    Abc_TtClear( p->pTruth, nWords );
     while ( 1 ) 
     {
         // find onset minterm
@@ -168,7 +170,7 @@ word Sfm_ComputeInterpolant( Sfm_Ntk_t * p )
         if ( status == l_Undef )
             return SFM_SAT_UNDEC;
         if ( status == l_False )
-            return uTruth;
+            return p->pTruth[0];
         assert( status == l_True );
         // remember variable values
         Vec_IntClear( p->vValues );
@@ -189,7 +191,7 @@ word Sfm_ComputeInterpolant( Sfm_Ntk_t * p )
         assert( status == l_False );
         // compute cube and add clause
         nFinal = sat_solver_final( p->pSat, &pFinal );
-        uCube = ~(word)0;
+        Abc_TtFill( p->pCube, nWords );
         Vec_IntClear( p->vLits );
         Vec_IntPush( p->vLits, Abc_LitNot(pLits[1]) ); // NOT(iNewLit)
         for ( i = 0; i < nFinal; i++ )
@@ -198,9 +200,9 @@ word Sfm_ComputeInterpolant( Sfm_Ntk_t * p )
                 continue;
             Vec_IntPush( p->vLits, pFinal[i] );
             iVar = Vec_IntFind( p->vDivIds, Abc_Lit2Var(pFinal[i]) );   assert( iVar >= 0 );
-            uCube &= Abc_LitIsCompl(pFinal[i]) ? s_Truths6[iVar] : ~s_Truths6[iVar];
+            Abc_TtAndSharp( p->pCube, p->pCube, p->pTtElems[iVar], nWords, !Abc_LitIsCompl(pFinal[i]) );
         }
-        uTruth |= uCube;
+        Abc_TtOr( p->pTruth, p->pTruth, p->pCube, nWords );
         status = sat_solver_addclause( p->pSat, Vec_IntArray(p->vLits), Vec_IntArray(p->vLits) + Vec_IntSize(p->vLits) );
         assert( status );
         nIter++;
@@ -211,8 +213,8 @@ word Sfm_ComputeInterpolant( Sfm_Ntk_t * p )
         if ( Vec_IntEntry(p->vValues, i) ^ sat_solver_var_value(p->pSat, iVar) ) // insert 1
         {
             pSign = Vec_WrdEntryP( p->vDivCexes, i );
-            assert( !Abc_InfoHasBit( (unsigned *)pSign, p->nCexes) );
-            Abc_InfoXorBit( (unsigned *)pSign, p->nCexes );
+            assert( !Abc_TtGetBit( pSign, p->nCexes) );
+            Abc_TtXorBit( pSign, p->nCexes );
         }
     p->nCexes++;
     return SFM_SAT_SAT;
@@ -282,8 +284,8 @@ int Sfm_ComputeInterpolantInt( Sfm_Ntk_t * p, word Truth[2] )
         if ( Value ^ sat_solver_var_value(p->pSat, iVar) ) // insert 1
         {
             word * pSign = Vec_WrdEntryP( p->vDivCexes, i );
-            assert( !Abc_InfoHasBit( (unsigned *)pSign, p->nCexes) );
-            Abc_InfoXorBit( (unsigned *)pSign, p->nCexes );
+            assert( !Abc_TtGetBit( pSign, p->nCexes) );
+            Abc_TtXorBit( pSign, p->nCexes );
         }
     }
     p->nCexes++;
@@ -308,7 +310,7 @@ word Sfm_ComputeInterpolant2( Sfm_Ntk_t * p )
     ResP = Abc_Tt6Isop( Truth[1], ~Truth[0], Vec_IntSize(p->vDivIds), &nCubesP );
     ResN = Abc_Tt6Isop( Truth[0], ~Truth[1], Vec_IntSize(p->vDivIds), &nCubesN );
     Res  = nCubesP <= nCubesN ? ResP : ~ResN;
-    //Dau_DsdPrintFromTruth( &Res, Vec_IntSize(p->vDivIds) );            
+    //Dau_DsdPrintFromTruth( &Res, Vec_IntSize(p->vDivIds) );
     return Res;
 }
 

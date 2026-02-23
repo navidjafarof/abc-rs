@@ -54,13 +54,35 @@ struct Bmc_EsPar_t_
     int        fMajority;
     int        fUseIncr;
     int        fOnlyAnd;
+    int        fDynConstr;
+    int        fDumpCnf;
     int        fGlucose;
+    int        fCadical;
+    int        fKissat;
+    int        fCard;
     int        fOrderNodes;
     int        fEnumSols;
     int        fFewerVars;
+    int        fQuadrEnc;
+    int        fUniqFans;
+    int        fLutCascade;
+    int        fLutInFixed;
+    int        fMinNodes;
+    int        fUsePerm;
     int        RuntimeLim;
+    int        nRandFuncs;
+    int        nMintNum;
+    int        Seed;
+    int        n1HotAlgo;
+    int        fDumpBlif;
+    int        fGenTruths;
     int        fVerbose; 
+    int        fSilent; 
     char *     pTtStr;
+    char *     pSymStr;
+    char *     pPermStr;
+    char *     pGuide;
+    Vec_Wrd_t* vTruths;
 };
 
 static inline void Bmc_EsParSetDefault( Bmc_EsPar_t * pPars )
@@ -73,12 +95,18 @@ static inline void Bmc_EsParSetDefault( Bmc_EsPar_t * pPars )
     pPars->fMajority   = 0; 
     pPars->fUseIncr    = 0;
     pPars->fOnlyAnd    = 0; 
+    pPars->fDynConstr  = 0; 
+    pPars->fDumpCnf    = 0; 
     pPars->fGlucose    = 0; 
     pPars->fOrderNodes = 0; 
     pPars->fEnumSols   = 0; 
     pPars->fFewerVars  = 0; 
+    pPars->fQuadrEnc   = 0; 
+    pPars->fUniqFans   = 0;
+    pPars->fLutCascade = 0;
     pPars->RuntimeLim  = 0;
-    pPars->fVerbose    = 1; 
+    pPars->n1HotAlgo   = 1;
+    pPars->fVerbose    = 0; 
 }
 
 
@@ -120,6 +148,8 @@ struct Saig_ParBmc_t_
     int(*pFuncOnFail)(int,Abc_Cex_t*); // called for a failed output in MO mode
     int         RunId;          // BMC id in this run 
     int(*pFuncStop)(int);       // callback to terminate
+    int(*pFuncProgress)(void *, int, unsigned); // progress/termination callback
+    void *      pProgress;      // progress callback data
 };
 
  
@@ -145,7 +175,9 @@ struct Bmc_AndPar_t_
     int         iFrame;         // explored up to this frame
     int         nFailOuts;      // the number of failed outputs
     int         nDropOuts;      // the number of dropped outputs
-    
+
+    int(*pFuncProgress)(void *, int, unsigned); // progress/termination callback
+    void *      pProgress;      // progress callback data
     void (*pFuncOnFrameDone)(int, int, int); // callback on each frame status (frame, po, statuss)
 };
   
@@ -219,7 +251,8 @@ extern int               Gia_ManBmcPerform( Gia_Man_t * p, Bmc_AndPar_t * pPars 
 extern Abc_Cex_t *       Bmc_CexCareExtendToObjects( Gia_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexCare );
 extern Abc_Cex_t *       Bmc_CexCareMinimize( Aig_Man_t * p, int nRealPis, Abc_Cex_t * pCex, int nTryCexes, int fCheck, int fVerbose );
 extern Abc_Cex_t *       Bmc_CexCareMinimizeAig( Gia_Man_t * p, int nRealPis, Abc_Cex_t * pCex, int nTryCexes, int fCheck, int fVerbose );
-extern void              Bmc_CexCareVerify( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int fVerbose );
+extern int               Bmc_CexCareVerify( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int fVerbose );
+extern int               Bmc_CexCareVerifyAnyPo( Aig_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexMin, int fVerbose );
 extern Abc_Cex_t *       Bmc_CexCareSatBasedMinimize( Aig_Man_t * p, int nRealPis, Abc_Cex_t * pCex, int fHighEffort, int fCheck, int fVerbose );
 extern Abc_Cex_t *       Bmc_CexCareSatBasedMinimizeAig( Gia_Man_t * p, Abc_Cex_t * pCex, int fHighEffort, int fVerbose );
 /*=== bmcCexCut.c ==========================================================*/
@@ -230,6 +263,7 @@ extern Abc_Cex_t *       Saig_ManCexMinPerform( Aig_Man_t * pAig, Abc_Cex_t * pC
 /*=== bmcCexTool.c ==========================================================*/
 extern void              Bmc_CexPrint( Abc_Cex_t * pCex, int nRealPis, int fVerbose );
 extern int               Bmc_CexVerify( Gia_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexCare );
+extern int               Bmc_CexVerifyAnyPo( Gia_Man_t * p, Abc_Cex_t * pCex, Abc_Cex_t * pCexCare );
 /*=== bmcICheck.c ==========================================================*/
 extern void              Bmc_PerformICheck( Gia_Man_t * p, int nFramesMax, int nTimeOut, int fEmpty, int fVerbose );
 extern Vec_Int_t *       Bmc_PerformISearch( Gia_Man_t * p, int nFramesMax, int nTimeOut, int fReverse, int fBackTopo, int fDump, int fVerbose );
@@ -248,4 +282,3 @@ ABC_NAMESPACE_HEADER_END
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
-

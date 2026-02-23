@@ -120,6 +120,9 @@ struct Cec_ParFra_t_
     int              fVeryVerbose;  // verbose stats
     int              fVerbose;      // verbose stats
     int              iOutFail;      // the failed output
+    int              fBMiterInfo;   // printing BMiter information
+    int              nPO;           // number of po in original design given a bmiter
+    char *           pDumpName;     // file name to dump statistics
 };
 
 // combinational equivalence checking parameters
@@ -132,10 +135,14 @@ struct Cec_ParCec_t_
     int              fUseSmartCnf;  // use smart CNF computation
     int              fRewriting;    // enables AIG rewriting
     int              fNaive;        // performs naive SAT-based checking
+    int              fUseOrigIds;   // enable recording of original IDs 
     int              fSilent;       // print no messages
     int              fVeryVerbose;  // verbose stats
     int              fVerbose;      // verbose stats
     int              iOutFail;      // the number of failed output
+    const char *     pNameSpec;     // name of the first (spec) network
+    const char *     pNameImpl;     // name of the second (impl) network
+    Vec_Ptr_t *      vNamesIn;      // input names of the first network
 };
 
 // sequential register correspodence parameters
@@ -147,8 +154,11 @@ struct Cec_ParCor_t_
     int              nFrames;       // the number of time frames
     int              nPrefix;       // the number of time frames in the prefix
     int              nBTLimit;      // conflict limit at a node
+    int              nProcs;        // the number of processes
+    int              nPartSize;     // the partition size
     int              nLevelMax;     // (scorr only) the max number of levels
     int              nStepsMax;     // (scorr only) the max number of induction steps
+    int              nLimitMax;     // (scorr only) stop after this many iterations if little or no improvement
     int              fLatchCorr;    // consider only latch outputs
     int              fConstCorr;    // consider only constants
     int              fUseRings;     // use rings
@@ -195,6 +205,27 @@ struct Cec_ParSeq_t_
     int              fVerbose;      // verbose stats
 };
 
+// CEC SimGen parameters
+typedef struct Cec_ParSimGen_t_ Cec_ParSimGen_t;
+struct Cec_ParSimGen_t_
+{
+    int              fVerbose;          // verbose flag
+    int              fVeryVerbose;      // verbose flag
+    int              expId;             // experiment ID for SimGen
+    int              bitwidthOutgold;   // bitwidth of the output gold
+    int              nSimWords;       // number of words in a round of random simulation
+    int              nMaxIter;          // maximum number of rounds of random simulation
+    char *           outGold;           // data containing outgold
+    float            timeOutSim;        // timeout for simulation
+    int              fUseWatchlist;     // use watchlist
+    float            fImplicationTime;  // time spent in implication
+    int              nImplicationExecution; // number of times implication was executed
+    int              nImplicationSuccess; // number of times implication was successful
+    int              nImplicationTotalChecks; // number of times implication was checked
+    int              nImplicationSuccessChecks; // number of times implication was successful
+    char *           pFileName;         // file name to dump simulation vectors
+};
+
 ////////////////////////////////////////////////////////////////////////
 ///                      MACRO DEFINITIONS                           ///
 ////////////////////////////////////////////////////////////////////////
@@ -206,6 +237,7 @@ struct Cec_ParSeq_t_
 /*=== cecCec.c ==========================================================*/
 extern int           Cec_ManVerify( Gia_Man_t * p, Cec_ParCec_t * pPars );
 extern int           Cec_ManVerifyTwo( Gia_Man_t * p0, Gia_Man_t * p1, int fVerbose );
+extern int           Cec_ManVerifyTwoInv( Gia_Man_t * p0, Gia_Man_t * p1, int fVerbose );
 extern int           Cec_ManVerifySimple( Gia_Man_t * p );
 /*=== cecChoice.c ==========================================================*/
 extern Gia_Man_t *   Cec_ManChoiceComputation( Gia_Man_t * pAig, Cec_ParChc_t * pPars );
@@ -244,4 +276,3 @@ ABC_NAMESPACE_HEADER_END
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////
-

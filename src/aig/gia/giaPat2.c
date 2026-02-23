@@ -184,13 +184,15 @@ static inline int Min_ManAppendCo( Min_Man_t * p, int iLit0 )
 ***********************************************************************/
 void Min_ManFromGia_rec( Min_Man_t * pNew, Gia_Man_t * p, int iObj )
 {
-    Gia_Obj_t * pObj = Gia_ManObj(p, iObj);
+    Gia_Obj_t * pObj = Gia_ManObj(p, iObj); int iLit0, iLit1;
     if ( ~pObj->Value )
         return;
     assert( Gia_ObjIsAnd(pObj) );
     Min_ManFromGia_rec( pNew, p, Gia_ObjFaninId0(pObj, iObj) );
     Min_ManFromGia_rec( pNew, p, Gia_ObjFaninId1(pObj, iObj) );
-    pObj->Value = Min_ManAppendObj( pNew, Gia_ObjFanin0Copy(pObj), Gia_ObjFanin1Copy(pObj) );
+    iLit0 = Gia_ObjFanin0Copy(pObj);
+    iLit1 = Gia_ObjFanin1Copy(pObj);
+    pObj->Value = Min_ManAppendObj( pNew, Abc_MinInt(iLit0, iLit1), Abc_MaxInt(iLit0, iLit1) );
 }
 Min_Man_t * Min_ManFromGia( Gia_Man_t * p, Vec_Int_t * vOuts )
 {
@@ -205,7 +207,7 @@ Min_Man_t * Min_ManFromGia( Gia_Man_t * p, Vec_Int_t * vOuts )
         Gia_ManForEachAnd( p, pObj, i )
             pObj->Value = Min_ManAppendObj( pNew, Gia_ObjFaninLit0(pObj, i), Gia_ObjFaninLit1(pObj, i) );
         Gia_ManForEachCo( p, pObj, i )
-            pObj->Value = Min_ManAppendCo( pNew, Gia_ObjFaninLit0p(p, pObj) );
+            pObj->Value = Min_ManAppendCo( pNew, Gia_ObjFanin0Copy(pObj) );
     }
     else
     {
@@ -346,7 +348,7 @@ void Min_LitMinimize( Min_Man_t * p, int iLit, Vec_Int_t * vLits )
                         Min_ObjMarkValL( p, Abc_Lit2Var(iLit1) );
                     else if ( Val0 == 4 && Val1 != 4 )
                         Min_ObjMarkValL( p, Abc_Lit2Var(iLit0) );
-                    else if ( Val1 == 4 && Val1 != 4 )
+                    else if ( Val1 == 4 && Val0 != 4 )
                         Min_ObjMarkValL( p, Abc_Lit2Var(iLit1) );
                     else if ( Abc_Random(0) & 1 )
                         Min_ObjMarkValL( p, Abc_Lit2Var(iLit0) );
@@ -403,8 +405,10 @@ static inline char Min_LitIsImplied2( Min_Man_t * p, int iLit )
     char Val1 = Min_LitValL(p, iLit1);
     assert( Min_LitIsNode(p, iLit) );    // internal node
     assert( Min_LitValL(p, iLit) == 2 ); // unassigned
-    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) )
+    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) ) {
         Val0 = Min_LitIsImplied1(p, iLit0);
+        Val1 = Min_LitValL(p, iLit1);
+    }
     if ( Val1 == 2 && Min_LitIsNode(p, iLit1) )
         Val1 = Min_LitIsImplied1(p, iLit1);
     if ( Min_LitIsXor(iLit, iLit0, iLit1) )
@@ -427,8 +431,10 @@ static inline char Min_LitIsImplied3( Min_Man_t * p, int iLit )
     char Val1 = Min_LitValL(p, iLit1);
     assert( Min_LitIsNode(p, iLit) );    // internal node
     assert( Min_LitValL(p, iLit) == 2 ); // unassigned
-    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) )
+    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) ) {
         Val0 = Min_LitIsImplied2(p, iLit0);
+        Val1 = Min_LitValL(p, iLit1);
+    }
     if ( Val1 == 2 && Min_LitIsNode(p, iLit1) )
         Val1 = Min_LitIsImplied2(p, iLit1);
     if ( Min_LitIsXor(iLit, iLit0, iLit1) )
@@ -451,8 +457,10 @@ static inline char Min_LitIsImplied4( Min_Man_t * p, int iLit )
     char Val1 = Min_LitValL(p, iLit1);
     assert( Min_LitIsNode(p, iLit) );    // internal node
     assert( Min_LitValL(p, iLit) == 2 ); // unassigned
-    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) )
+    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) ) {
         Val0 = Min_LitIsImplied3(p, iLit0);
+        Val1 = Min_LitValL(p, iLit1);
+    }
     if ( Val1 == 2 && Min_LitIsNode(p, iLit1) )
         Val1 = Min_LitIsImplied3(p, iLit1);
     if ( Min_LitIsXor(iLit, iLit0, iLit1) )
@@ -475,8 +483,10 @@ static inline char Min_LitIsImplied5( Min_Man_t * p, int iLit )
     char Val1 = Min_LitValL(p, iLit1);
     assert( Min_LitIsNode(p, iLit) );    // internal node
     assert( Min_LitValL(p, iLit) == 2 ); // unassigned
-    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) )
+    if ( Val0 == 2 && Min_LitIsNode(p, iLit0) ) {
         Val0 = Min_LitIsImplied4(p, iLit0);
+        Val1 = Min_LitValL(p, iLit1);
+    }
     if ( Val1 == 2 && Min_LitIsNode(p, iLit1) )
         Val1 = Min_LitIsImplied4(p, iLit1);
     if ( Min_LitIsXor(iLit, iLit0, iLit1) )
@@ -851,7 +861,7 @@ Gia_Man_t * Gia_ManDupCones2( Gia_Man_t * p, int * pOuts, int nOuts, Vec_Int_t *
 ***********************************************************************/
 int Min_ManRemoveItem( Vec_Wec_t * vCexes, int iItem, int iFirst, int iLimit )
 {
-    Vec_Int_t * vLevel, * vLevel0 = Vec_WecEntry(vCexes, iItem);  int i;
+    Vec_Int_t * vLevel = NULL, * vLevel0 = Vec_WecEntry(vCexes, iItem);  int i;
     assert( iFirst <= iItem && iItem < iLimit );
     Vec_WecForEachLevelReverseStartStop( vCexes, vLevel, i, iLimit, iFirst )
         if ( Vec_IntSize(vLevel) > 0 )
@@ -890,6 +900,8 @@ int Min_ManCountSize( Vec_Wec_t * vCexes, int iFirst, int iLimit )
 }
 Vec_Wec_t * Min_ManComputeCexes( Gia_Man_t * p, Vec_Int_t * vOuts0, int nMaxTries, int nMinCexes, Vec_Int_t * vStats[3], int fUseSim, int fUseSat, int fVerbose )
 {
+    int fUseSynthesis  = 1;
+    abctime clkSim = Abc_Clock(), clkSat = Abc_Clock();
     Vec_Int_t * vOuts  = vOuts0 ? vOuts0 : Vec_IntStartNatural( Gia_ManCoNum(p) );
     Min_Man_t * pNew   = Min_ManFromGia( p, vOuts ); 
     Vec_Wec_t * vCexes = Vec_WecStart( Vec_IntSize(vOuts) * nMinCexes );
@@ -945,6 +957,7 @@ Vec_Wec_t * Min_ManComputeCexes( Gia_Man_t * p, Vec_Int_t * vOuts0, int nMaxTrie
     assert( Vec_IntSize(vOuts) == Vec_IntSize(vStats[0]) );
     assert( Vec_IntSize(vOuts) == Vec_IntSize(vStats[1]) );
     assert( Vec_IntSize(vOuts) == Vec_IntSize(vStats[2]) );
+    clkSim = Abc_Clock() - clkSim;
 
     if ( fUseSat )
     Gia_ManForEachCoVec( vOuts, p, pObj, i )
@@ -952,11 +965,19 @@ Vec_Wec_t * Min_ManComputeCexes( Gia_Man_t * p, Vec_Int_t * vOuts0, int nMaxTrie
         if ( Vec_IntEntry(vStats[2], i) >= nMinCexes || Vec_IntEntry(vStats[1], i) > 10*Vec_IntEntry(vStats[2], i) )
             continue;
         {
+            assert( Gia_ObjIsCo(pObj) );
+            if ( Gia_ObjFaninId0p(p, pObj) == 0 ) {
+                if ( fVerbose )
+                    printf( "Output %d is driven by constant %d.\n", Gia_ObjCioId(pObj), Gia_ObjFaninC0(pObj) );
+                continue;
+            }
+            abctime clk = Abc_Clock();
             int iObj  = Min_ManCo(pNew, i);
             int Index = Gia_ObjCioId(pObj);
             Vec_Int_t * vMap = Vec_IntAlloc( 100 );
             Gia_Man_t * pCon = Gia_ManDupCones2( p, &Index, 1, vMap );
-            Cnf_Dat_t * pCnf = (Cnf_Dat_t *)Mf_ManGenerateCnf( pCon, 8, 0, 0, 0, 0 );
+            Gia_Man_t * pCon1= fUseSynthesis ? Gia_ManAigSyn2( pCon, 0, 1, 0, 100, 0, 0, 0 ) : NULL;
+            Cnf_Dat_t * pCnf = (Cnf_Dat_t *)Mf_ManGenerateCnf( fUseSynthesis ? pCon1 : pCon, 8, 0, 0, 0, 0 );
             sat_solver* pSat = (sat_solver *)Cnf_DataWriteIntoSolver( pCnf, 1, 0 );
             int Lit          = Abc_Var2Lit( 1, 0 );
             int status       = sat_solver_addclause( pSat, &Lit, &Lit+1 );
@@ -972,8 +993,11 @@ Vec_Wec_t * Min_ManComputeCexes( Gia_Man_t * p, Vec_Int_t * vOuts0, int nMaxTrie
                     while ( nAllCalls++ < 100 )
                     {
                         int v, iVar = pCnf->nVars - Gia_ManPiNum(pCon), nVars = Gia_ManPiNum(pCon);
-                        sat_solver_randomize( pSat, iVar, nVars );
+                        if ( nAllCalls > 1 )
+                            sat_solver_randomize( pSat, iVar, nVars );
                         status = sat_solver_solve( pSat, NULL, NULL, 0, 0, 0, 0 );
+                        if ( status != l_True )
+                            break;
                         assert( status == l_True );
                         Vec_IntClear( vLits );
                         for ( v = 0; v < nVars; v++ )
@@ -1004,11 +1028,22 @@ Vec_Wec_t * Min_ManComputeCexes( Gia_Man_t * p, Vec_Int_t * vOuts0, int nMaxTrie
             sat_solver_delete( pSat );
             Cnf_DataFree( pCnf );
             Gia_ManStop( pCon );
+            Gia_ManStopP( &pCon1 );
             Vec_IntFree( vMap );
+            if ( fVerbose )
+            {
+                printf( "SAT solving for output %3d (cexes = %5d) : ", i, nCurrCexes );
+                Abc_PrintTime( 1, "Time", Abc_Clock() - clk );
+            }
         }
     }
+    clkSat = Abc_Clock() - clkSat - clkSim;
     if ( fVerbose )
         printf( "Used simulation for %d and SAT for %d outputs (out of %d).\n", nSimOuts, nSatOuts, nOuts );
+    if ( fVerbose )
+        Abc_PrintTime( 1, "Simulation time  ", clkSim );
+    if ( fVerbose )
+        Abc_PrintTime( 1, "SAT solving time ", clkSat );
     //Vec_WecPrint( vCexes, 0 );
     if ( vOuts != vOuts0 )
         Vec_IntFreeP( &vOuts );
@@ -1076,7 +1111,7 @@ Vec_Ptr_t * Min_ReloadCexes( Vec_Wec_t * vCexes, int nMinCexes )
 Vec_Wrd_t * Min_ManBitPack( Gia_Man_t * p, int nWords0, Vec_Wec_t * vCexes, int fRandom, int nMinCexes, Vec_Int_t * vScores, int fVerbose )
 {
     abctime clk = Abc_Clock();
-    int fVeryVerbose = 0;
+    //int fVeryVerbose = 0;
     Vec_Wrd_t * vSimsPi = NULL;
     Vec_Int_t * vLevel; 
     int w, nBits, nTotal = 0, fFailed = ABC_INFINITY;
@@ -1259,39 +1294,51 @@ Vec_Wrd_t * Gia_ManCollectSims( Gia_Man_t * pSwp, int nWords, Vec_Int_t * vOuts,
     Vec_Int_t * vMap    = Vec_IntAlloc( 100 );
     Gia_Man_t * pSwp2   = Gia_ManDupCones2( pSwp, Vec_IntArray(vOuts), Vec_IntSize(vOuts), vMap );
     Vec_Wec_t * vCexes  = Min_ManComputeCexes( pSwp2, NULL, nMaxTries, nMinCexes, vStats, fUseSim, fUseSat, fVerbose );
-    Vec_Wrd_t * vSimsPi = Min_ManBitPack( pSwp2, nWords, vCexes, 1, nMinCexes, vStats[0], fVerbose );
-    Vec_Wrd_t * vSimsPo = Gia_ManSimPatSimOut( pSwp2, vSimsPi, 1 );
-    Vec_Int_t * vCounts = Patt_ManOutputErrorCoverage( vSimsPo, Vec_IntSize(vOuts) );
-    if ( fVerbose )
-        Patt_ManProfileErrorsOne( vSimsPo, Vec_IntSize(vOuts) );
-    if ( fVeryVerbose )
+    if ( Vec_IntSum(vStats[2]) == 0 )
     {
-        printf( "Unsolved = %4d  ", Vec_IntSize(vOuts) );
-        Gia_ManPrintStats( pSwp2, NULL );
-        Vec_IntForEachEntry( vOuts, iObj, i )
-        {
-            printf( "%4d : ", i );
-            printf( "Out = %5d  ",    Vec_IntEntry(vMap, i) );
-            printf( "SimAll =%8d  ",  Vec_IntEntry(vStats[0], i) );
-            printf( "SimGood =%8d  ", Vec_IntEntry(vStats[1], i) );
-            printf( "PatsAll =%8d  ", Vec_IntEntry(vStats[2], i) );
-            printf( "Count = %5d  ",  Vec_IntEntry(vCounts, i) );
-            printf( "\n" );
-            if ( i == 20 )
-                break;
-        }
+        for ( i = 0; i < 3; i++ )
+            Vec_IntFree( vStats[i] );
+        Vec_IntFree( vMap );
+        Gia_ManStop( pSwp2 );
+        Vec_WecFree( vCexes );
+        return NULL;
     }
-    for ( i = 0; i < 3; i++ )
-        Vec_IntFree( vStats[i] );
-    Vec_IntFree( vCounts );
-    Vec_WrdFree( vSimsPo );
-    Vec_WecFree( vCexes );
-    Gia_ManStop( pSwp2 );
-    //printf( "Compressing inputs: %5d -> %5d\n", Gia_ManCiNum(pSwp), Vec_IntSize(vMap) );
-    vSimsPi = Min_ManRemapSims( Gia_ManCiNum(pSwp), vMap, vSimsPo = vSimsPi );
-    Vec_WrdFree( vSimsPo );
-    Vec_IntFree( vMap );
-    return vSimsPi;
+    else
+    {
+        Vec_Wrd_t * vSimsPi = Min_ManBitPack( pSwp2, nWords, vCexes, 1, nMinCexes, vStats[0], fVerbose );
+        Vec_Wrd_t * vSimsPo = Gia_ManSimPatSimOut( pSwp2, vSimsPi, 1 );
+        Vec_Int_t * vCounts = Patt_ManOutputErrorCoverage( vSimsPo, Vec_IntSize(vOuts) );
+        if ( fVerbose )
+            Patt_ManProfileErrorsOne( vSimsPo, Vec_IntSize(vOuts) );
+        if ( fVeryVerbose )
+        {
+            printf( "Unsolved = %4d  ", Vec_IntSize(vOuts) );
+            Gia_ManPrintStats( pSwp2, NULL );
+            Vec_IntForEachEntry( vOuts, iObj, i )
+            {
+                printf( "%4d : ", i );
+                printf( "Out = %5d  ",    Vec_IntEntry(vMap, i) );
+                printf( "SimAll =%8d  ",  Vec_IntEntry(vStats[0], i) );
+                printf( "SimGood =%8d  ", Vec_IntEntry(vStats[1], i) );
+                printf( "PatsAll =%8d  ", Vec_IntEntry(vStats[2], i) );
+                printf( "Count = %5d  ",  Vec_IntEntry(vCounts, i) );
+                printf( "\n" );
+                if ( i == 20 )
+                    break;
+            }
+        }
+        for ( i = 0; i < 3; i++ )
+            Vec_IntFree( vStats[i] );
+        Vec_IntFree( vCounts );
+        Vec_WrdFree( vSimsPo );
+        Vec_WecFree( vCexes );
+        Gia_ManStop( pSwp2 );
+        //printf( "Compressing inputs: %5d -> %5d\n", Gia_ManCiNum(pSwp), Vec_IntSize(vMap) );
+        vSimsPi = Min_ManRemapSims( Gia_ManCiNum(pSwp), vMap, vSimsPo = vSimsPi );
+        Vec_WrdFree( vSimsPo );
+        Vec_IntFree( vMap );
+        return vSimsPi;
+    }
 }
 Vec_Wrd_t * Min_ManCollect( Gia_Man_t * p, int nConf, int nConf2, int nMaxTries, int nMinCexes, int fUseSim, int fUseSat, int fVerbose, int fVeryVerbose )
 {
@@ -1318,6 +1365,136 @@ void Min_ManTest2( Gia_Man_t * p )
 {
     Vec_Wrd_t * vSimsPi = Min_ManCollect( p, 100000, 100000, 10000, 20, 1, 0, 1, 1 );
     Vec_WrdFreeP( &vSimsPi );
+}
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+void Gia_GenerateCexesDumpBlif( char * pFileName, Gia_Man_t * p, Vec_Wec_t * vCexes )
+{
+    extern Vec_Ptr_t * Gia_GetFakeNames( int nNames, int fCaps );
+    FILE * pFile = fopen( pFileName, "wb" );
+    if ( pFile == NULL ) {
+        printf( "Cannot open output file name \"%s\".\n", pFileName );
+        return;
+    }
+    int fFakeIns = 0, fFakeOuts = 0;
+    if ( p->vNamesIn == NULL )
+        p->vNamesIn = Gia_GetFakeNames( Gia_ManCiNum(p), 0 ), fFakeIns = 1;
+    if ( p->vNamesOut == NULL )
+        p->vNamesOut = Gia_GetFakeNames( Gia_ManCoNum(p), 1 ), fFakeOuts = 1;
+
+    Gia_Obj_t * pObj, * pObj2; 
+    char * pLine = ABC_CALLOC( char, Gia_ManCiNum(p)+3 );
+    int i, k, c, iLit, nOuts[2] = {0}, nCexes = Vec_WecSize(vCexes) / Gia_ManCoNum(p);
+    fprintf( pFile, "# Satisfying assignments for the primary outputs generated by ABC on %s\n", Gia_TimeStamp() );
+    fprintf( pFile, ".model %s\n", p->pName );
+    fprintf( pFile, ".inputs" );
+    Gia_ManForEachCi( p, pObj, i )
+        fprintf( pFile, " %s", Gia_ObjCiName(p, i) );
+    fprintf( pFile, "\n.outputs" );
+    Gia_ManForEachCo( p, pObj, i )
+        fprintf( pFile, " %s", Gia_ObjCoName(p, i) );
+    fprintf( pFile, "\n" );
+    Gia_ManForEachCo( p, pObj, i ) {
+        if ( Gia_ObjFaninLit0p(p, pObj) == 0 ) {
+            fprintf( pFile, ".names %s\n", Gia_ObjCoName(p, i) );
+            nOuts[0]++;
+        }
+        else if ( Gia_ObjFaninLit0p(p, pObj) == 1 ) {
+            fprintf( pFile, ".names %s\n 1\n", Gia_ObjCiName(p, i) );
+            nOuts[1]++;
+        }
+        else {
+            fprintf( pFile, ".names" );
+            Gia_ManForEachCi( p, pObj2, c )
+                fprintf( pFile, " %s", Gia_ObjCiName(p, c) );
+            fprintf( pFile, " %s\n", Gia_ObjCoName(p, i) );
+            for ( c = 0; c < nCexes; c++ ) {
+                Vec_Int_t * vPat = Vec_WecEntry( vCexes, i*nCexes+c );
+                memset(pLine, '-', Gia_ManCiNum(p) );
+                Vec_IntForEachEntry( vPat, iLit, k )
+                    pLine[Abc_Lit2Var(iLit)-1] = '1' - Abc_LitIsCompl(iLit);
+                fprintf( pFile, "%s 1\n", pLine );
+            }
+            nOuts[1]++;
+        }
+    }
+    fprintf( pFile, ".end\n\n" );
+    fclose( pFile );
+    printf( "Information about %d sat, %d unsat, and %d undecided primary outputs was written into BLIF file \"%s\".\n", 
+        nOuts[1], nOuts[0], Gia_ManCoNum(p)-nOuts[1]-nOuts[0], pFileName );    
+    free( pLine );
+
+    if ( fFakeIns )  Vec_PtrFreeFree( p->vNamesIn  ), p->vNamesIn  = NULL;
+    if ( fFakeOuts ) Vec_PtrFreeFree( p->vNamesOut ), p->vNamesOut = NULL;
+}
+void Gia_GenerateCexesDumpFile( char * pFileName, Gia_Man_t * p, Vec_Wec_t * vCexes, int fShort )
+{
+    FILE * pFile = fopen( pFileName, "wb" );
+    if ( pFile == NULL ) {
+        printf( "Cannot open output file name \"%s\".\n", pFileName );
+        return;
+    }
+    Gia_Obj_t * pObj; 
+    char * pLine = ABC_CALLOC( char, Gia_ManCiNum(p)+3 );
+    int i, k, c, iLit, nOuts[2] = {0}, nCexes = Vec_WecSize(vCexes) / Gia_ManCoNum(p);
+    Gia_ManForEachCo( p, pObj, i ) {
+        if ( Gia_ObjFaninLit0p(p, Gia_ManCo(p, i)) == 0 ) {
+            fprintf( pFile, "%d : unsat\n", i );
+            nOuts[0]++;
+        }
+        else if ( fShort ) {
+            for ( c = 0; c < nCexes; c++ ) {
+                Vec_Int_t * vPat = Vec_WecEntry( vCexes, i*nCexes+c );
+                fprintf( pFile, "%d :", i );
+                if ( Vec_IntSize(vPat) == 0 )
+                    fprintf( pFile, " not available" );
+                else
+                    Vec_IntForEachEntry( vPat, iLit, k )
+                        fprintf( pFile, " %d", iLit );
+                fprintf( pFile, "\n" );
+            }
+            nOuts[1]++;
+        }
+        else {
+            for ( c = 0; c < nCexes; c++ ) {
+                Vec_Int_t * vPat = Vec_WecEntry( vCexes, i*nCexes+c );
+                memset(pLine, '-', Gia_ManCiNum(p) );
+                Vec_IntForEachEntry( vPat, iLit, k )
+                    pLine[Abc_Lit2Var(iLit)-1] = '1' - Abc_LitIsCompl(iLit);
+                fprintf( pFile, "%d : %s\n", i, pLine );
+            }
+            nOuts[1]++;
+        }
+    }
+    printf( "Information about %d sat, %d unsat, and %d undecided primary outputs was written into file \"%s\".\n", 
+        nOuts[1], nOuts[0], Gia_ManCoNum(p)-nOuts[1]-nOuts[0], pFileName );
+    fclose( pFile );
+    free( pLine );
+}
+void Gia_GenerateCexes( char * pFileName, Gia_Man_t * p, int nMaxTries, int nMinCexes, int fUseSim, int fUseSat, int fShort, int fBlif, int fVerbose, int fVeryVerbose )
+{
+    unsigned Start = Abc_Random(1);
+    Vec_Int_t * vStats[3] = {0}; int i;
+    Vec_Wec_t * vCexes  = Min_ManComputeCexes( p, NULL, nMaxTries, nMinCexes, vStats, fUseSim, fUseSat, fVerbose );    
+    assert( Vec_WecSize(vCexes) == Gia_ManCoNum(p) * nMinCexes );
+    if ( fBlif )
+        Gia_GenerateCexesDumpBlif( pFileName, p, vCexes );
+    else
+        Gia_GenerateCexesDumpFile( pFileName, p, vCexes, fShort );
+    for ( i = 0; i < 3; i++ )
+      Vec_IntFreeP( &vStats[i] );
+    Vec_WecFree( vCexes );
+    Start = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////

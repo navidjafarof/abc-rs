@@ -1169,8 +1169,13 @@ void Aig_ManRandomTest1()
 ***********************************************************************/
 unsigned Aig_ManRandom( int fReset )
 {
+#ifdef _MSC_VER
     static unsigned int m_z = NUMBER1;
     static unsigned int m_w = NUMBER2;
+#else
+    static __thread unsigned int m_z = NUMBER1;
+    static __thread unsigned int m_w = NUMBER2;
+#endif    
     if ( fReset )
     {
         m_z = NUMBER1;
@@ -1333,7 +1338,7 @@ void Aig_ManCounterExampleValueStart( Aig_Man_t * pAig, Abc_Cex_t * pCex )
     pAig->pData2 = ABC_CALLOC( unsigned, Abc_BitWordNum( (pCex->iFrame + 1) * Aig_ManObjNumMax(pAig) ) );
     // the register values in the counter-example should be zero
     Saig_ManForEachLo( pAig, pObj, k )
-        assert( Abc_InfoHasBit(pCex->pData, iBit++) == 0 );
+        assert( Abc_InfoHasBit(pCex->pData, iBit) == 0 ), iBit++;
     // iterate through the timeframes
     nObjs = Aig_ManObjNumMax(pAig);
     for ( i = 0; i <= pCex->iFrame; i++ )

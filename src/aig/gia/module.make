@@ -6,6 +6,7 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaBalLut.c \
     src/aig/gia/giaBalMap.c \
     src/aig/gia/giaBidec.c \
+    src/aig/gia/giaBsFind.c \
     src/aig/gia/giaCCof.c \
     src/aig/gia/giaCex.c \
     src/aig/gia/giaClp.c \
@@ -15,6 +16,7 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaCSat.c \
     src/aig/gia/giaCSat2.c \
     src/aig/gia/giaCSat3.c \
+    src/aig/gia/giaCSatP.c \
     src/aig/gia/giaCTas.c \
     src/aig/gia/giaCut.c \
     src/aig/gia/giaDecs.c \
@@ -48,6 +50,7 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaJf.c \
     src/aig/gia/giaKf.c \
     src/aig/gia/giaLf.c \
+    src/aig/gia/giaLutCas.c \
     src/aig/gia/giaMf.c \
     src/aig/gia/giaMan.c \
     src/aig/gia/giaMem.c \
@@ -55,6 +58,8 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaMini.c \
     src/aig/gia/giaMinLut.c \
     src/aig/gia/giaMinLut2.c \
+    src/aig/gia/giaMulFind.c \
+    src/aig/gia/giaMulFind3.c \
     src/aig/gia/giaMuxes.c \
     src/aig/gia/giaNf.c \
     src/aig/gia/giaOf.c \
@@ -68,13 +73,16 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaResub.c \
     src/aig/gia/giaResub2.c \
     src/aig/gia/giaResub3.c \
+    src/aig/gia/giaResub6.c \
     src/aig/gia/giaRetime.c \
     src/aig/gia/giaRex.c \
+    src/aig/gia/giaRrr.cpp \
     src/aig/gia/giaSatEdge.c \
     src/aig/gia/giaSatLE.c \
     src/aig/gia/giaSatLut.c \
     src/aig/gia/giaSatMap.c \
     src/aig/gia/giaSatoko.c \
+    src/aig/gia/giaSatSyn.c \
     src/aig/gia/giaSat3.c \
     src/aig/gia/giaScl.c \
     src/aig/gia/giaScript.c \
@@ -82,6 +90,7 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaShrink.c \
     src/aig/gia/giaShrink6.c \
     src/aig/gia/giaShrink7.c \
+    src/aig/gia/giaSif.c \
     src/aig/gia/giaSim.c \
     src/aig/gia/giaSim2.c \
     src/aig/gia/giaSimBase.c \
@@ -99,7 +108,12 @@ SRC +=    src/aig/gia/giaAig.c \
     src/aig/gia/giaSwitch.c \
     src/aig/gia/giaTim.c \
     src/aig/gia/giaTis.c \
+    src/aig/gia/giaTransduction.cpp \
+    src/aig/gia/giaTranStoch.c \
     src/aig/gia/giaTruth.c \
     src/aig/gia/giaTsim.c \
+    src/aig/gia/giaTtopt.cpp \
     src/aig/gia/giaUnate.c \
-    src/aig/gia/giaUtil.c
+    src/aig/gia/giaUtil.c \
+    src/aig/gia/giaBound.c \
+    src/aig/gia/giaDecGraph.cpp

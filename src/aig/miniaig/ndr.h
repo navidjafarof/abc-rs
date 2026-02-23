@@ -219,7 +219,8 @@ static inline void Ndr_DataPushString( Ndr_Data_t * p, int ObjType, int Type, ch
     {
         //word Truth = (word)pFunc;
         //Ndr_DataPushArray( p, Type, 2, (int *)&Truth );
-        Ndr_DataPushArray( p, Type, 2, (int *)&pFunc );
+        int nInts = (strlen(pFunc) + 1 + sizeof(int) - 1) / sizeof(int); 
+        Ndr_DataPushArray( p, Type, nInts, (int *)&pFunc );
     }
     else
     {
@@ -506,7 +507,7 @@ static inline void Ndr_WriteVerilogModule( FILE * pFile, void * pDesign, int Mod
         else if ( nArray == 3 && Type == ABC_OPER_ARI_ADD )
             fprintf( pFile, "%s + %s + %s;\n", pNames[pArray[0]], pNames[pArray[1]], pNames[pArray[2]] );
         else if ( Type == ABC_OPER_BIT_MUX )
-            fprintf( pFile, "%s ? %s : %s;\n", pNames[pArray[0]], pNames[pArray[1]], pNames[pArray[2]] );
+            fprintf( pFile, "%s ? %s : %s;\n", pNames[pArray[0]], pNames[pArray[2]], pNames[pArray[1]] );
         else
             fprintf( pFile, "<cannot write operation %s>;\n", Abc_OperName(Ndr_ObjReadBody(p, Obj, NDR_OPERTYPE)) );
     }

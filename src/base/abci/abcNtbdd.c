@@ -237,7 +237,8 @@ Abc_Obj_t * Abc_NodeBddToMuxes_rec( DdManager * dd, DdNode * bFunc, Abc_Ntk_t * 
 {
     Abc_Obj_t * pNodeNew, * pNodeNew0, * pNodeNew1, * pNodeNewC;
     assert( !Cudd_IsComplement(bFunc) );
-    if ( bFunc == b1 || bFunc == a1 )
+    //assert( b1 == a1 );
+    if ( bFunc == a1 )
         return Abc_NtkCreateNodeConst1(pNtkNew);
     if ( bFunc == a0 )
         return Abc_NtkCreateNodeConst0(pNtkNew);
@@ -432,7 +433,8 @@ void * Abc_NtkBuildGlobalBdds( Abc_Ntk_t * pNtk, int nBddSizeMax, int fDropInter
 //        Cudd_ReduceHeap( dd, CUDD_REORDER_SYMM_SIFT, 1 );
         Cudd_AutodynDisable( dd );
     }
-//    Cudd_PrintInfo( dd, stdout );
+    if ( fVerbose )
+        Cudd_PrintInfo( dd, stdout );
     return dd;
 }
 

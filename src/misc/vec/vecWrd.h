@@ -195,6 +195,71 @@ static inline Vec_Wrd_t * Vec_WrdStartTruthTables( int nVars )
     }
     return p;
 }
+static inline Vec_Wrd_t * Vec_WrdStartTruthTablesRev( int nVars )
+{
+    Vec_Wrd_t * p;
+    unsigned Masks[5] = { 0xAAAAAAAA, 0xCCCCCCCC, 0xF0F0F0F0, 0xFF00FF00, 0xFFFF0000 };
+    int i, k, nWords;
+    nWords = nVars <= 6 ? 1 : (1 << (nVars - 6));
+    p = Vec_WrdStart( nWords * nVars );
+    for ( i = 0; i < nVars; i++ )
+    {
+        unsigned * pTruth = (unsigned *)(p->pArray + nWords * (nVars-1-i));
+        if ( i < 5 )
+        {
+            for ( k = 0; k < 2*nWords; k++ )
+                pTruth[k] = Masks[i];
+        }
+        else
+        {
+            for ( k = 0; k < 2*nWords; k++ )
+                if ( k & (1 << (i-5)) )
+                    pTruth[k] = ~(unsigned)0;
+                else
+                    pTruth[k] = 0;
+        }
+    }
+    return p;
+}
+static inline Vec_Wrd_t * Vec_WrdStartTruthTables6( int nVars )
+{
+    word Masks[6] = {     
+        ABC_CONST(0xAAAAAAAAAAAAAAAA),
+        ABC_CONST(0xCCCCCCCCCCCCCCCC),
+        ABC_CONST(0xF0F0F0F0F0F0F0F0),
+        ABC_CONST(0xFF00FF00FF00FF00),
+        ABC_CONST(0xFFFF0000FFFF0000),
+        ABC_CONST(0xFFFFFFFF00000000)
+    };
+    int i, k, nWords = nVars <= 6 ? 1 : (1 << (nVars - 6));
+    Vec_Wrd_t * p = Vec_WrdStart( nWords * nVars );
+    for ( i = 0; i < nVars; i++ )
+    {
+        word * pTruth = p->pArray + nWords * i;
+        if ( i < 6 )
+        {
+            for ( k = 0; k < nWords; k++ )
+                pTruth[k] = Masks[i];
+        }
+        else
+        {
+            for ( k = 0; k < nWords; k++ )
+                if ( k & (1 << (i-6)) )
+                    pTruth[k] = ~(word)0;
+                else
+                    pTruth[k] = 0;
+        }
+    }
+    return p;
+}
+static inline int Vec_WrdShiftOne( Vec_Wrd_t * p, int nWords )
+{
+    int i, nObjs = p->nSize/nWords;
+    assert( nObjs * nWords == p->nSize );
+    for ( i = 0; i < nObjs; i++ )
+        p->pArray[i*nWords] <<= 1;
+    return nObjs;
+}
 
 /**Function*************************************************************
 
@@ -519,6 +584,7 @@ static inline void Vec_WrdGrow( Vec_Wrd_t * p, int nCapMin )
 {
     if ( p->nCap >= nCapMin )
         return;
+    assert( p->nCap < ABC_INT_MAX );
     p->pArray = ABC_REALLOC( word, p->pArray, nCapMin ); 
     assert( p->pArray );
     p->nCap   = nCapMin;
@@ -563,7 +629,7 @@ static inline void Vec_WrdFillExtra( Vec_Wrd_t * p, int nSize, word Fill )
     if ( nSize > 2 * p->nCap )
         Vec_WrdGrow( p, nSize );
     else if ( nSize > p->nCap )
-        Vec_WrdGrow( p, 2 * p->nCap );
+        Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
     for ( i = p->nSize; i < nSize; i++ )
         p->pArray[i] = Fill;
     p->nSize = nSize;
@@ -671,7 +737,7 @@ static inline void Vec_WrdPush( Vec_Wrd_t * p, word Entry )
         if ( p->nCap < 16 )
             Vec_WrdGrow( p, 16 );
         else
-            Vec_WrdGrow( p, 2 * p->nCap );
+            Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
     }
     p->pArray[p->nSize++] = Entry;
 }
@@ -719,7 +785,7 @@ static inline void Vec_WrdPushFirst( Vec_Wrd_t * p, word Entry )
         if ( p->nCap < 16 )
             Vec_WrdGrow( p, 16 );
         else
-            Vec_WrdGrow( p, 2 * p->nCap );
+            Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
     }
     p->nSize++;
     for ( i = p->nSize - 1; i >= 1; i-- )
@@ -746,7 +812,7 @@ static inline void Vec_WrdPushOrder( Vec_Wrd_t * p, word Entry )
         if ( p->nCap < 16 )
             Vec_WrdGrow( p, 16 );
         else
-            Vec_WrdGrow( p, 2 * p->nCap );
+            Vec_WrdGrow( p, p->nCap < ABC_INT_MAX/2 ? 2 * p->nCap : ABC_INT_MAX );
     }
     p->nSize++;
     for ( i = p->nSize-2; i >= 0; i-- )
@@ -1211,6 +1277,36 @@ static inline Vec_Wrd_t * Vec_WrdUniqifyHash( Vec_Wrd_t * vData, int nWordSize )
 
 /**Function*************************************************************
 
+  Synopsis    [Returns the number of common entries.]
+
+  Description [Assumes that the vectors are sorted in the increasing order.]
+
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+static inline int Vec_WrdTwoCountCommon( Vec_Wrd_t * vArr1, Vec_Wrd_t * vArr2 )
+{
+    word * pBeg1 = vArr1->pArray;
+    word * pBeg2 = vArr2->pArray;
+    word * pEnd1 = vArr1->pArray + vArr1->nSize;
+    word * pEnd2 = vArr2->pArray + vArr2->nSize;
+    int Counter = 0;
+    while ( pBeg1 < pEnd1 && pBeg2 < pEnd2 )
+    {
+        if ( *pBeg1 == *pBeg2 )
+            pBeg1++, pBeg2++, Counter++;
+        else if ( *pBeg1 < *pBeg2 )
+            pBeg1++;
+        else
+            pBeg2++;
+    }
+    return Counter;
+}
+
+/**Function*************************************************************
+
   Synopsis    [Comparison procedure for two integers.]
 
   Description []
@@ -1276,7 +1372,67 @@ static inline void Vec_WrdAppend( Vec_Wrd_t * vVec1, Vec_Wrd_t * vVec2 )
   SeeAlso     []
 
 ***********************************************************************/
-static inline void Gia_ManSimPatWriteOne( FILE * pFile, word * pSim, int nWords )
+static inline void Vec_WrdDumpBoolOne( FILE * pFile, word * pSim, int nBits, int fReverse )
+{
+    int k;
+    if ( fReverse )
+        for ( k = nBits-1; k >= 0; k-- )
+            fprintf( pFile, "%d", (int)((pSim[k/64] >> (k%64)) & 1) );
+    else
+        for ( k = 0; k < nBits; k++ )
+            fprintf( pFile, "%d", (int)((pSim[k/64] >> (k%64)) & 1) );
+    fprintf( pFile, "\n" );
+}
+static inline void Vec_WrdDumpBool( char * pFileName, Vec_Wrd_t * p, int nWords, int nBits, int fReverse, int fVerbose )
+{
+    int i, nNodes = Vec_WrdSize(p) / nWords;
+    FILE * pFile = fopen( pFileName, "wb" );
+    if ( pFile == NULL )
+    {
+        printf( "Cannot open file \"%s\" for writing.\n", pFileName );
+        return;
+    }
+    assert( Vec_WrdSize(p) % nWords == 0 );
+    for ( i = 0; i < nNodes; i++ )
+        Vec_WrdDumpBoolOne( pFile, Vec_WrdEntryP(p, i*nWords), nBits, fReverse );
+    fclose( pFile );
+    if ( fVerbose )
+        printf( "Written %d bits of simulation data for %d objects into file \"%s\".\n", nBits, Vec_WrdSize(p)/nWords, pFileName );
+}
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+static inline void Vec_WrdPrintBin( Vec_Wrd_t * p, int nWords )
+{
+    int i, k, nNodes = Vec_WrdSize(p) / nWords;
+    assert( Vec_WrdSize(p) % nWords == 0 );
+    printf( "The array contains %d bit-strings of %d bits:\n", nNodes, 64*nWords );
+    for ( i = 0; i < nNodes; i++, printf("\n") )
+        for ( k = 0; k < 64*nWords; k++ )
+            printf( "%d", Abc_InfoHasBit((unsigned*)Vec_WrdEntryP(p, i*nWords), k) );
+}
+
+/**Function*************************************************************
+
+  Synopsis    []
+
+  Description []
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
+static inline void Vec_WrdDumpHexOne( FILE * pFile, word * pSim, int nWords )
 {
     int k, Digit, nDigits = nWords*16;
     for ( k = 0; k < nDigits; k++ )
@@ -1293,8 +1449,9 @@ static inline void Vec_WrdPrintHex( Vec_Wrd_t * p, int nWords )
 {
     int i, nNodes = Vec_WrdSize(p) / nWords;
     assert( Vec_WrdSize(p) % nWords == 0 );
+    printf( "The array contains %d bit-strings of %d bits:\n", nNodes, 64*nWords );
     for ( i = 0; i < nNodes; i++ )
-        Gia_ManSimPatWriteOne( stdout, Vec_WrdEntryP(p, i*nWords), nWords );
+        Vec_WrdDumpHexOne( stdout, Vec_WrdEntryP(p, i*nWords), nWords );
 }
 static inline void Vec_WrdDumpHex( char * pFileName, Vec_Wrd_t * p, int nWords, int fVerbose )
 {
@@ -1307,7 +1464,7 @@ static inline void Vec_WrdDumpHex( char * pFileName, Vec_Wrd_t * p, int nWords, 
     }
     assert( Vec_WrdSize(p) % nWords == 0 );
     for ( i = 0; i < nNodes; i++ )
-        Gia_ManSimPatWriteOne( pFile, Vec_WrdEntryP(p, i*nWords), nWords );
+        Vec_WrdDumpHexOne( pFile, Vec_WrdEntryP(p, i*nWords), nWords );
     fclose( pFile );
     if ( fVerbose )
         printf( "Written %d words of simulation data for %d objects into file \"%s\".\n", nWords, Vec_WrdSize(p)/nWords, pFileName );

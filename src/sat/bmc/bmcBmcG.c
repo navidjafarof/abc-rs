@@ -421,9 +421,11 @@ int Bmcg_ManPerformOne( Gia_Man_t * pGia, Bmc_AndPar_t * pPars )
             break;
     }
     p->timeOth = Abc_Clock() - clkStart - p->timeUnf - p->timeCnf - p->timeSmp - p->timeSat;
-    if ( RetValue == -1 && !pPars->fNotVerbose )
-        printf( "No output failed in %d frames.  ", f + (k < pPars->nFramesAdd ? k+1 : 0) );
-    Abc_PrintTime( 1, "Time", Abc_Clock() - clkStart );
+    if ( !pPars->fNotVerbose ) {
+        if ( RetValue == -1 && !pPars->fNotVerbose )
+            printf( "No output failed in %d frames.  ", f + (k < pPars->nFramesAdd ? k+1 : 0) );
+        Abc_PrintTime( 1, "Time", Abc_Clock() - clkStart );
+    }
     Bmcg_ManPrintTime( p );
     Bmcg_ManStop( p );
     return RetValue;
@@ -443,6 +445,8 @@ int Bmcg_ManPerformOne( Gia_Man_t * pGia, Bmc_AndPar_t * pPars )
 int Bmcg_ManPerform( Gia_Man_t * pGia, Bmc_AndPar_t * pPars ) 
 { 
     pPars->nProcs = 1;
+    if ( pPars->pFuncProgress && pPars->pFuncProgress( pPars->pProgress, 0, 0 ) )
+        return -1;
     return Bmcg_ManPerformOne( pGia, pPars );
 }
 
@@ -452,4 +456,3 @@ int Bmcg_ManPerform( Gia_Man_t * pGia, Bmc_AndPar_t * pPars )
 
 
 ABC_NAMESPACE_IMPL_END
-

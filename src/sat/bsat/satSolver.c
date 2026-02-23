@@ -60,9 +60,10 @@ static void printlits(lit* begin, lit* end)
 static inline double drand(double* seed) {
     int q;
     *seed *= 1389796;
-    q = (int)(*seed / 2147483647);
+    q = (int)(*seed * 4.6566128752457969e-10); // 1.0/2147483647.0;
     *seed -= (double)q * 2147483647;
-    return *seed / 2147483647; }
+    return *seed * 4.6566128752457969e-10; // 1.0/2147483647.0
+}
 
 
 // Returns a random integer 0 <= x < size. Seed must never be 0.
@@ -511,13 +512,14 @@ static void sortrnd(void** array, int size, int(*comp)(const void *, const void 
 
 static inline int sat_clause_compute_lbd( sat_solver* s, clause* c )
 {
-    int i, lev, minl = 0, lbd = 0;
-    for (i = 0; i < (int)c->size; i++)
+    unsigned int i, lev, minl = 0;
+    int lbd = 0;
+    for (i = 0; i < c->size; i++)
     {
         lev = var_level(s, lit_var(c->lits[i]));
-        if ( !(minl & (1 << (lev & 31))) )
+        if ( !(minl & (1U << (lev & 31))) )
         {
-            minl |= 1 << (lev & 31);
+            minl |= 1U << (lev & 31);
             lbd++;
 //            printf( "%d ", lev );
         }
@@ -1953,12 +1955,12 @@ int sat_solver_solve_internal(sat_solver* s)
 
     while (status == l_Undef){
         ABC_INT64_T nof_conflicts;
-        double Ratio = (s->stats.learnts == 0)? 0.0 :
-            s->stats.learnts_literals / (double)s->stats.learnts;
         if ( s->nRuntimeLimit && Abc_Clock() > s->nRuntimeLimit )
             break;
         if (s->verbosity >= 1)
         {
+            double Ratio = (s->stats.learnts == 0)? 0.0 :
+                s->stats.learnts_literals / (double)s->stats.learnts;
             printf("| %9.0f | %7.0f %8.0f | %7.0f %7.0f %8.0f %7.1f | %6.3f %% |\n", 
                 (double)s->stats.conflicts,
                 (double)s->stats.clauses, 

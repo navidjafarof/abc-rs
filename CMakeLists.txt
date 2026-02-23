@@ -1,8 +1,14 @@
-cmake_minimum_required(VERSION 3.3.0)
+cmake_minimum_required(VERSION 3.5.0)
 
 include(CMakeParseArguments)
 include(CheckCCompilerFlag)
 include(CheckCXXCompilerFlag)
+# Generate compilation database compile_commands.json
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Default c++ standard used unless otherwise specified in target_compile_features.
+set(CMAKE_CXX_STANDARD 17 CACHE STRING "the C++ standard to use for this project")
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 function(addprefix var prefix)
     foreach( s ${ARGN} )
@@ -47,9 +53,14 @@ if(ABC_USE_NAMESPACE)
     set(ABC_USE_NAMESPACE_FLAGS "ABC_USE_NAMESPACE=${ABC_USE_NAMESPACE}")
 endif()
 
+if( APPLE )
+    set(make_env ${CMAKE_COMMAND} -E env SDKROOT=${CMAKE_OSX_SYSROOT})
+endif()
+
 # run make to extract compiler options, linker options and list of source files
 execute_process(
   COMMAND
+    ${make_env}
     make
         ${ABC_READLINE_FLAGS}
         ${ABC_USE_NAMESPACE_FLAGS}
@@ -103,3 +114,17 @@ add_library(libabc-pic EXCLUDE_FROM_ALL ${ABC_SRC})
 abc_properties(libabc-pic PUBLIC)
 set_property(TARGET libabc-pic PROPERTY POSITION_INDEPENDENT_CODE ON)
 set_property(TARGET libabc-pic PROPERTY OUTPUT_NAME abc-pic)
+
+if(NOT DEFINED ABC_SKIP_TESTS)
+    enable_testing()
+    include(FetchContent)
+    FetchContent_Declare(
+    googletest
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+    # Specify the commit you depend on and update it regularly.
+    URL "https://github.com/google/googletest/archive/refs/tags/v1.14.0.zip"
+    )
+    FetchContent_MakeAvailable(googletest)
+    include(GoogleTest)
+    add_subdirectory(test)
+endif()

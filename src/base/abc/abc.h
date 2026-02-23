@@ -214,6 +214,7 @@ struct Abc_Ntk_t_
     Vec_Ptr_t *       vAttrs;        // managers of various node attributes (node functionality, global BDDs, etc)
     Vec_Int_t *       vNameIds;      // name IDs
     Vec_Int_t *       vFins;         // obj/type info
+    Vec_Int_t *       vOrigNodeIds;  // original node IDs
 };
 
 struct Abc_Des_t_ 
@@ -559,7 +560,7 @@ extern ABC_DLL Abc_Obj_t *        Abc_AigOr( Abc_Aig_t * pMan, Abc_Obj_t * p0, A
 extern ABC_DLL Abc_Obj_t *        Abc_AigXor( Abc_Aig_t * pMan, Abc_Obj_t * p0, Abc_Obj_t * p1 );
 extern ABC_DLL Abc_Obj_t *        Abc_AigMux( Abc_Aig_t * pMan, Abc_Obj_t * pC, Abc_Obj_t * p1, Abc_Obj_t * p0 );
 extern ABC_DLL Abc_Obj_t *        Abc_AigMiter( Abc_Aig_t * pMan, Vec_Ptr_t * vPairs, int fImplic );
-extern ABC_DLL void               Abc_AigReplace( Abc_Aig_t * pMan, Abc_Obj_t * pOld, Abc_Obj_t * pNew, int  fUpdateLevel );
+extern ABC_DLL int                Abc_AigReplace( Abc_Aig_t * pMan, Abc_Obj_t * pOld, Abc_Obj_t * pNew, int  fUpdateLevel );
 extern ABC_DLL void               Abc_AigDeleteNode( Abc_Aig_t * pMan, Abc_Obj_t * pOld );
 extern ABC_DLL void               Abc_AigRehash( Abc_Aig_t * pMan );
 extern ABC_DLL int                Abc_AigNodeHasComplFanoutEdge( Abc_Obj_t * pNode );
@@ -639,6 +640,7 @@ extern ABC_DLL Vec_Ptr_t *        Abc_AigDfsMap( Abc_Ntk_t * pNtk );
 extern ABC_DLL Vec_Vec_t *        Abc_DfsLevelized( Abc_Obj_t * pNode, int  fTfi );
 extern ABC_DLL Vec_Vec_t *        Abc_NtkLevelize( Abc_Ntk_t * pNtk );
 extern ABC_DLL int                Abc_NtkLevel( Abc_Ntk_t * pNtk );
+extern ABC_DLL int                Abc_NtkLevelR( Abc_Ntk_t * pNtk );
 extern ABC_DLL int                Abc_NtkLevelReverse( Abc_Ntk_t * pNtk );
 extern ABC_DLL int                Abc_NtkIsAcyclic( Abc_Ntk_t * pNtk );
 extern ABC_DLL int                Abc_NtkIsAcyclicWithBoxes( Abc_Ntk_t * pNtk );
@@ -677,6 +679,7 @@ extern ABC_DLL void               Abc_NtkLogicMakeDirectSops( Abc_Ntk_t * pNtk )
 extern ABC_DLL int                Abc_NtkSopToAig( Abc_Ntk_t * pNtk );
 extern ABC_DLL int                Abc_NtkAigToBdd( Abc_Ntk_t * pNtk );
 extern ABC_DLL Gia_Man_t *        Abc_NtkAigToGia( Abc_Ntk_t * p, int fGiaSimple );
+extern ABC_DLL int                Abc_NtkMapToSopUsingLibrary( Abc_Ntk_t * pNtk, void* library );
 extern ABC_DLL int                Abc_NtkMapToSop( Abc_Ntk_t * pNtk );
 extern ABC_DLL int                Abc_NtkToSop( Abc_Ntk_t * pNtk, int fMode, int nCubeLimit );
 extern ABC_DLL int                Abc_NtkToBdd( Abc_Ntk_t * pNtk );
@@ -752,6 +755,7 @@ extern ABC_DLL void               Abc_NtkAddDummyPiNames( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkAddDummyPoNames( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkAddDummyBoxNames( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkShortNames( Abc_Ntk_t * pNtk );
+extern ABC_DLL void               Abc_NtkCharNames( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkCleanNames( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkStartNameIds( Abc_Ntk_t * p );
 extern ABC_DLL void               Abc_NtkTransferNameIds( Abc_Ntk_t * p, Abc_Ntk_t * pNew );
@@ -783,11 +787,13 @@ extern ABC_DLL void               Abc_NtkAppendToCone( Abc_Ntk_t * pNtkNew, Abc_
 extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateMffc( Abc_Ntk_t * pNtk, Abc_Obj_t * pNode, char * pNodeName );
 extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateTarget( Abc_Ntk_t * pNtk, Vec_Ptr_t * vRoots, Vec_Int_t * vValues );
 extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateFromNode( Abc_Ntk_t * pNtk, Abc_Obj_t * pNode );
+extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateFromRange( Abc_Ntk_t * pNtk );
 extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateWithNode( char * pSop );
+extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateWithNodes( Vec_Ptr_t * vSops );
 extern ABC_DLL void               Abc_NtkDelete( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkFixNonDrivenNets( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkMakeComb( Abc_Ntk_t * pNtk, int fRemoveLatches );
-extern ABC_DLL void               Abc_NtkPermute( Abc_Ntk_t * pNtk, int fInputs, int fOutputs, int fFlops, char * pFlopPermFile );
+extern ABC_DLL void               Abc_NtkPermute( Abc_Ntk_t * pNtk, int fInputs, int fOutputs, int fFlops, char * pInPermFile, char * pOutPermFile, char * pFlopPermFile );
 extern ABC_DLL void               Abc_NtkUnpermute( Abc_Ntk_t * pNtk );
 extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateFromSops( char * pName, Vec_Ptr_t * vSops );
 extern ABC_DLL Abc_Ntk_t *        Abc_NtkCreateFromGias( char * pName, Vec_Ptr_t * vGias, Gia_Man_t * pMulti );
@@ -839,7 +845,7 @@ extern ABC_DLL void               Abc_NtkPrintFanioNew( FILE * pFile, Abc_Ntk_t 
 extern ABC_DLL void               Abc_NodePrintFanio( FILE * pFile, Abc_Obj_t * pNode );
 extern ABC_DLL void               Abc_NtkPrintFactor( FILE * pFile, Abc_Ntk_t * pNtk, int fUseRealNames );
 extern ABC_DLL void               Abc_NodePrintFactor( FILE * pFile, Abc_Obj_t * pNode, int fUseRealNames );
-extern ABC_DLL void               Abc_NtkPrintLevel( FILE * pFile, Abc_Ntk_t * pNtk, int fProfile, int fListNodes, int fVerbose );
+extern ABC_DLL void               Abc_NtkPrintLevel( FILE * pFile, Abc_Ntk_t * pNtk, int fProfile, int fListNodes, int fOutputs, int fVerbose );
 extern ABC_DLL void               Abc_NodePrintLevel( FILE * pFile, Abc_Obj_t * pNode );
 extern ABC_DLL void               Abc_NtkPrintSkews( FILE * pFile, Abc_Ntk_t * pNtk, int fPrintAll );
 extern ABC_DLL void               Abc_ObjPrint( FILE * pFile, Abc_Obj_t * pObj );
@@ -876,7 +882,7 @@ extern ABC_DLL void               Abc_NodeMffcConeSupp( Abc_Obj_t * pNode, Vec_P
 extern ABC_DLL int                Abc_NodeDeref_rec( Abc_Obj_t * pNode );
 extern ABC_DLL int                Abc_NodeRef_rec( Abc_Obj_t * pNode );
 /*=== abcRefactor.c ==========================================================*/
-extern ABC_DLL int                Abc_NtkRefactor( Abc_Ntk_t * pNtk, int nNodeSizeMax, int nConeSizeMax, int  fUpdateLevel, int  fUseZeros, int  fUseDcs, int  fVerbose );
+extern ABC_DLL int                Abc_NtkRefactor( Abc_Ntk_t * pNtk, int nNodeSizeMax, int nMinSaved, int nConeSizeMax, int  fUpdateLevel, int  fUseZeros, int  fUseDcs, int  fVerbose );
 /*=== abcRewrite.c ==========================================================*/
 extern ABC_DLL int                Abc_NtkRewrite( Abc_Ntk_t * pNtk, int fUpdateLevel, int fUseZeros, int fVerbose, int fVeryVerbose, int fPlaceEnable );
 /*=== abcSat.c ==========================================================*/
@@ -920,6 +926,8 @@ extern ABC_DLL int                Abc_SopIsExorType( char * pSop );
 extern ABC_DLL int                Abc_SopCheck( char * pSop, int nFanins );
 extern ABC_DLL char *             Abc_SopFromTruthBin( char * pTruth );
 extern ABC_DLL char *             Abc_SopFromTruthHex( char * pTruth );
+extern ABC_DLL Vec_Ptr_t *        Abc_SopFromTruthsBin( char * pTruth );
+extern ABC_DLL Vec_Ptr_t *        Abc_SopFromTruthsHex( char * pTruth );
 extern ABC_DLL char *             Abc_SopEncoderPos( Mem_Flex_t * pMan, int iValue, int nValues );
 extern ABC_DLL char *             Abc_SopEncoderLog( Mem_Flex_t * pMan, int iBit, int nValues );
 extern ABC_DLL char *             Abc_SopDecoderPos( Mem_Flex_t * pMan, int nValues );
@@ -1038,7 +1046,7 @@ extern ABC_DLL Vec_Int_t *        Abc_NtkFanoutCounts( Abc_Ntk_t * pNtk );
 extern ABC_DLL Vec_Ptr_t *        Abc_NtkCollectObjects( Abc_Ntk_t * pNtk );
 extern ABC_DLL Vec_Int_t *        Abc_NtkGetCiIds( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkReassignIds( Abc_Ntk_t * pNtk );
-extern ABC_DLL int                Abc_ObjPointerCompare( void ** pp1, void ** pp2 );
+// extern ABC_DLL int                Abc_ObjPointerCompare( void ** pp1, void ** pp2 );
 extern ABC_DLL void               Abc_NtkTransferCopy( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkInvertConstraints( Abc_Ntk_t * pNtk );
 extern ABC_DLL void               Abc_NtkPrintCiLevels( Abc_Ntk_t * pNtk );

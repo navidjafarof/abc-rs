@@ -340,11 +340,11 @@ void Aig_WriteDotAig( Aig_Man_t * pMan, char * pFileName, int fHaig, Vec_Ptr_t *
 ***********************************************************************/
 void Aig_ManShow( Aig_Man_t * pMan, int fHaig, Vec_Ptr_t * vBold )
 {
-    extern void Abc_ShowFile( char * FileNameDot );
+    extern void Abc_ShowFile( char * FileNameDot, int fKeepDot );
     char FileNameDot[200];
     FILE * pFile;
     // create the file name
-    sprintf( FileNameDot, "%s", Extra_FileNameGenericAppend(pMan->pName, ".dot") );
+    sprintf( FileNameDot, "%s", Extra_FileNameGenericAppend(pMan->pName ? pMan->pName : (char *)"unknown", ".dot") );
     // check that the file can be opened
     if ( (pFile = fopen( FileNameDot, "w" )) == NULL )
     {
@@ -355,7 +355,7 @@ void Aig_ManShow( Aig_Man_t * pMan, int fHaig, Vec_Ptr_t * vBold )
     // generate the file
     Aig_WriteDotAig( pMan, FileNameDot, fHaig, vBold );
     // visualize the file 
-    Abc_ShowFile( FileNameDot );
+    Abc_ShowFile( FileNameDot, 0 );
 }
 
 

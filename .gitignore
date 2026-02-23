@@ -6,11 +6,13 @@ ReleaseLib/
 ReleaseExe/
 ReleaseExt/
 
+_/
 _TEST/
 lib/abc*
 lib/m114*
 lib/bip*
 docs/
+.cache/
 
 src/ext*
 src/xxx/
@@ -28,6 +30,7 @@ src/aig/ddb/
 *.plg
 
 *.zip
+*.DS_Store
 
 abcspaceext.dsw
 abcext.dsp
@@ -59,3 +62,4 @@ tags
 
 /cmake
 /cscope
+abc.history

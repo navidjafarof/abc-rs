@@ -49,8 +49,8 @@ ABC_NAMESPACE_IMPL_START
 ***********************************************************************/
 void Cmd_HistoryAddCommand(    Abc_Frame_t * p, const char * command )
 {
-    int nLastLooked =   10;  // do not add history if the same entry appears among the last entries
-    int nLastSaved  = 1000;  // when saving a file, save no more than this number of last entries
+    int nLastLooked =    10;  // do not add history if the same entry appears among the last entries
+    int nLastSaved  = 20000;  // when saving a file, save no more than this number of last entries
     char Buffer[ABC_MAX_STR];
     int Len;
     if ( p->fBatchMode )
@@ -102,7 +102,7 @@ void Cmd_HistoryAddCommand(    Abc_Frame_t * p, const char * command )
 ***********************************************************************/
 void Cmd_HistoryRead( Abc_Frame_t * p )
 {
-#if defined(WIN32) && defined(ABC_USE_HISTORY)
+#if defined(ABC_USE_HISTORY)
     char Buffer[ABC_MAX_STR];
     FILE * pFile;
     assert( Vec_PtrSize(p->aHistory) == 0 );
@@ -117,6 +117,7 @@ void Cmd_HistoryRead( Abc_Frame_t * p )
         Vec_PtrPush( p->aHistory, Extra_UtilStrsav(Buffer) );
     }
     fclose( pFile );
+    p->iStartHistory = Vec_PtrSize(p->aHistory);
 #endif
 }
 
@@ -133,20 +134,42 @@ void Cmd_HistoryRead( Abc_Frame_t * p )
 ***********************************************************************/
 void Cmd_HistoryWrite( Abc_Frame_t * p, int Limit )
 {
-#if defined(WIN32) && defined(ABC_USE_HISTORY)
+#if defined(ABC_USE_HISTORY)
     FILE * pFile;
     char * pStr; 
     int i;
-    pFile = fopen( "abc.history", "wb" );
-    if ( pFile == NULL )
+    if ( 1 )
     {
-        Abc_Print( 0, "Cannot open file \"abc.history\" for writing.\n" );
-        return;
+        pFile = fopen( "abc.history", "ab" );
+        if ( pFile == NULL )
+        {
+            Abc_Print( 0, "Cannot open file \"abc.history\" for writing.\n" );
+            return;
+        }
+        Vec_PtrForEachEntryStart( char *, p->aHistory, pStr, i, p->iStartHistory )
+            fprintf( pFile, "%s\n", pStr );
+        fclose( pFile );
+        p->iStartHistory = Vec_PtrSize(p->aHistory);
     }
-    Limit = Abc_MaxInt( 0, Vec_PtrSize(p->aHistory)-Limit );
-    Vec_PtrForEachEntryStart( char *, p->aHistory, pStr, i, Limit )
-        fprintf( pFile, "%s\n", pStr );
-    fclose( pFile );
+    if ( Vec_PtrSize(p->aHistory) > Limit + 1000 )
+    {
+        pFile = fopen( "abc.history", "wb" );
+        if ( pFile == NULL )
+        {
+            Abc_Print( 0, "Cannot open file \"abc.history\" for writing.\n" );
+            return;
+        }
+        Limit = Abc_MaxInt( 0, Vec_PtrSize(p->aHistory)-Limit );
+        Vec_Ptr_t * aHistory= Vec_PtrAlloc(Vec_PtrSize(p->aHistory));
+        Vec_PtrForEachEntryStart( char *, p->aHistory, pStr, i, Limit ) {
+            fprintf( pFile, "%s\n", pStr );
+            Vec_PtrPush( aHistory, Abc_UtilStrsav(pStr) );
+        }
+        fclose( pFile );
+        Vec_PtrFreeFree( p->aHistory );
+        p->aHistory = aHistory;
+        p->iStartHistory = Vec_PtrSize(p->aHistory);
+    }
 #endif
 }
 
@@ -163,7 +186,7 @@ void Cmd_HistoryWrite( Abc_Frame_t * p, int Limit )
 ***********************************************************************/
 void Cmd_HistoryPrint( Abc_Frame_t * p, int Limit )
 {
-#if defined(WIN32) && defined(ABC_USE_HISTORY) 
+#if defined(ABC_USE_HISTORY) 
     char * pStr; 
     int i;
     Limit = Abc_MaxInt( 0, Vec_PtrSize(p->aHistory)-Limit );
